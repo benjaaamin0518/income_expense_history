@@ -97,7 +97,7 @@ export class NeonApi {
     response = id;
     return response;
   }
-  public async getMonthlyReport() {
+  public async getMonthlyReport(id: string) {
     const query = {
       text: `
         with
@@ -123,8 +123,10 @@ export class NeonApi {
                     time_ranges
                     left join income_expense_history as income_history on income_history.created_at < (from_date + interval '1' month)
                     and income_history.type = '0'
+                    and income_history.user_id = $1
                     left join income_expense_history as expense_history on expense_history.created_at < (from_date + interval '1' month)
                     and expense_history.type = '1'
+                    and expense_history.user_id = $1
                 group by
                     from_date
                 order by
@@ -195,7 +197,7 @@ export class NeonApi {
             );
       `,
     };
-    const records = await this.pool.query(query);
+    const records = await this.pool.query(query, [id]);
     return records.rows;
   }
   /**

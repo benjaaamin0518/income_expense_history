@@ -61,7 +61,7 @@ app.get(
     try {
       const { userInfo } = req.body;
       const userId = await initAccessTokenAuth(userInfo);
-      const result = await neonApi.getMonthlyReport();
+      const result = await neonApi.getMonthlyReport(userId);
       // ユーザー情報とトークンをクライアントに返す
       res.status(200).json({
         status: 200, // ステータスコード
