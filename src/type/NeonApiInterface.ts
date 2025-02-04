@@ -38,9 +38,10 @@ export type incomeExpenseHistory = {
   date: string;
   description: string;
   type: IncomeExpenseType;
+  id: number;
 };
 export type insertIncomeExpenseHistoryRequest = accessTokenAuthRequest &
-  incomeExpenseHistory;
+  Omit<incomeExpenseHistory, "id">;
 export type insertIncomeExpenseHistoryApiRequest =
   Request<insertIncomeExpenseHistoryRequest>;
 export type insertIncomeExpenseHistoryResponse =
@@ -70,7 +71,7 @@ export type getIncomeExpenseHistoryApiRequest =
   Request<getIncomeExpenseHistoryRequest>;
 export type getIncomeExpenseHistoryResponse =
   | {
-      result: incomeExpenseHistory;
+      result: incomeExpenseHistory[];
       status: number;
     }
   | { error: string; status: number };

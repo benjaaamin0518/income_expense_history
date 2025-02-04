@@ -282,7 +282,7 @@ with
           income_expense_history
         where
           user_id = $1
-        order by created_at asc;
+        order by created_at desc;
       `,
     };
     const { rows } = await this.pool.query(query, [id]);
@@ -292,6 +292,7 @@ with
         type: current.type,
         description: current.description,
         date: current.created_at,
+        id: current.id,
       });
       return prev;
     }, []);

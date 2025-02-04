@@ -1,8 +1,16 @@
 import {
   accessTokenAuthRequest,
   accessTokenAuthResponse,
+  deleteIncomeExpenseHistoryRequest,
+  deleteIncomeExpenseHistoryResponse,
+  getIncomeExpenseHistoryApiRequest,
+  getIncomeExpenseHistoryRequest,
+  getIncomeExpenseHistoryResponse,
   getMonthlyReportRequest,
   getMonthlyReportResponse,
+  incomeExpenseHistory,
+  insertIncomeExpenseHistoryRequest,
+  insertIncomeExpenseHistoryResponse,
   loginAuthApiRequest,
   loginAuthApiResponse,
   loginAuthRequest,
@@ -122,6 +130,92 @@ class NeonClientApi {
       console.error(e);
     } finally {
       return monthlyReport;
+    }
+  }
+  public async insertIncomeExpenseHistory(
+    param: insertIncomeExpenseHistoryRequest
+  ) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<insertIncomeExpenseHistoryRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/insertIncomeExpenseHistory`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<insertIncomeExpenseHistoryResponse>,
+        insertIncomeExpenseHistoryRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async deleteIncomeExpenseHistory(
+    param: deleteIncomeExpenseHistoryRequest
+  ) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/deleteIncomeExpenseHistory`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<deleteIncomeExpenseHistoryResponse>,
+        deleteIncomeExpenseHistoryRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async getIncomeExpenseHistory(param: getIncomeExpenseHistoryRequest) {
+    let statusCode = 200;
+    let incomeExpenseHistory: incomeExpenseHistory[] = [];
+    try {
+      const options: AxiosRequestConfig<getIncomeExpenseHistoryRequest> = {
+        url: `${this._backendApiUrl}/api/v1/get/incomeExpenseHistory`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<getIncomeExpenseHistoryResponse>,
+        getIncomeExpenseHistoryRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+          if ("result" in res.data) {
+            incomeExpenseHistory = res.data.result;
+          }
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return incomeExpenseHistory;
     }
   }
 }

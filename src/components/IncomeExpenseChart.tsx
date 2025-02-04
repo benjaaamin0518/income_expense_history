@@ -139,7 +139,7 @@ export default function IncomeExpenseChart() {
                       : data.income
                   }
                   name="収入"
-                  stackId="1"
+                  stackId="0"
                   stroke="rgb(34, 197, 94)"
                   fill="url(#colorIncome)"
                   strokeWidth={2}
@@ -153,7 +153,7 @@ export default function IncomeExpenseChart() {
                       : data.expense
                   }
                   name="支出"
-                  stackId="0"
+                  stackId="1"
                   stroke="rgb(239, 68, 68)"
                   fill="url(#colorExpense)"
                   strokeWidth={2}

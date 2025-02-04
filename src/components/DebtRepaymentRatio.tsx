@@ -32,7 +32,13 @@ export default function DebtRepaymentRatio() {
           ? monthlyReport[monthlyReport.length - 1 - diffMonth].income
           : 0;
       setRemainingDebt((expense - income).toLocaleString());
-      setDebtRepaymentRatio(Math.round((income / expense) * 100 * 100) / 100);
+      setDebtRepaymentRatio(
+        isNaN(Math.round((income / expense) * 100 * 100) / 100)
+          ? 0
+          : !isFinite(Math.round((income / expense) * 100 * 100) / 100)
+          ? 100
+          : Math.round((income / expense) * 100 * 100) / 100
+      );
     }
   }, [monthlyReport]);
 
@@ -54,7 +60,15 @@ export default function DebtRepaymentRatio() {
               <span className="text-sm text-muted-foreground">目標: 100%</span>
             </div>
             <Progress
-              value={debtRepaymentRatio >= 100 ? 100 : debtRepaymentRatio}
+              value={
+                debtRepaymentRatio >= 100
+                  ? 100
+                  : isNaN(debtRepaymentRatio)
+                  ? 0
+                  : !isFinite(debtRepaymentRatio)
+                  ? 100
+                  : debtRepaymentRatio
+              }
               className="h-3"
             />
             <p className="text-sm text-muted-foreground">

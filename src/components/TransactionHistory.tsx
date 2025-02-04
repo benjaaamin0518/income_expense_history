@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -8,6 +8,7 @@ import {
   Plus,
   Trash2,
   DollarSign,
+  AlignEndHorizontal,
 } from "lucide-react";
 import {
   Table,
@@ -65,43 +66,24 @@ import {
   PopoverTrigger,
 } from "../components/ui/popover";
 import { cn } from "../lib/utils";
-
-type Transaction = {
-  id: number;
-  date: Date;
-  description: string;
-  amount: number;
-  type: "income" | "expense";
-};
-
-const defaultTransactions: Transaction[] = [
-  {
-    id: 1,
-    date: new Date(2024, 2, 15),
-    description: "給与",
-    amount: 320000,
-    type: "income",
-  },
-  {
-    id: 2,
-    date: new Date(2024, 2, 15),
-    description: "家賃",
-    amount: 85000,
-    type: "expense",
-  },
-  // ... 他の取引データ
-];
+import { incomeExpenseHistory } from "../type/NeonApiInterface";
+import {
+  getIncomeExpenseHistory,
+  getMonthlyReport,
+  useDashBoard,
+} from "../hooks/useDashBoard";
+import { NeonClientApi } from "../common/NeonApiClient";
 
 function AddTransactionDialog({
   onAdd,
 }: {
-  onAdd: (transaction: Omit<Transaction, "id">) => void;
+  onAdd: (transaction: Omit<incomeExpenseHistory, "id">) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [date, setDate] = useState<Date>(new Date());
-  const [type, setType] = useState<"income" | "expense">("expense");
+  const [date, setDate] = useState<string>("");
+  const [type, setType] = useState<"0" | "1">("0");
   const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
+  const [price, setPrice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,14 +98,14 @@ function AddTransactionDialog({
         date,
         type,
         description,
-        amount: Number(amount),
+        price: Number(price),
       });
 
       // フォームをリセット
-      setDate(new Date());
-      setType("expense");
+      setDate("");
+      setType("0");
       setDescription("");
-      setAmount("");
+      setPrice("");
       setIsOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -164,8 +146,10 @@ function AddTransactionDialog({
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={date}
-                  onSelect={(date) => date && setDate(date)}
+                  selected={new Date(date)}
+                  onSelect={(date) =>
+                    date && setDate(date.toLocaleDateString())
+                  }
                   initialFocus
                 />
               </PopoverContent>
@@ -175,13 +159,13 @@ function AddTransactionDialog({
             <Label htmlFor="type">種類</Label>
             <Select
               value={type}
-              onValueChange={(value: "income" | "expense") => setType(value)}>
+              onValueChange={(value: "0" | "1") => setType(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="種類を選択" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">収入</SelectItem>
-                <SelectItem value="expense">支出</SelectItem>
+                <SelectItem value="0">収入</SelectItem>
+                <SelectItem value="1">支出</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -202,8 +186,8 @@ function AddTransactionDialog({
               <Input
                 id="amount"
                 type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
                 placeholder="0"
                 className="pl-10"
                 required
@@ -248,7 +232,7 @@ function DeleteTransactionDialog({
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  transaction: Transaction;
+  transaction: incomeExpenseHistory;
 }) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -259,7 +243,7 @@ function DeleteTransactionDialog({
             以下の取引を削除してもよろしいですか？
             <br />
             {format(transaction.date, "yyyy年MM月dd日", { locale: ja })}の
-            {transaction.description}（¥{transaction.amount.toLocaleString()}）
+            {transaction.description}（¥{transaction.price.toLocaleString()}）
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -277,47 +261,101 @@ function DeleteTransactionDialog({
 
 export default function TransactionHistory() {
   const [selectedYear, setSelectedYear] = useState<string>("2024");
-  const [transactions, setTransactions] = useState(defaultTransactions);
+  const [transactions, setTransactions] = useState<incomeExpenseHistory[]>();
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
-    transaction: Transaction | null;
+    transaction: incomeExpenseHistory | null;
   }>({
     isOpen: false,
     transaction: null,
   });
-
-  const handleAddTransaction = (newTransaction: Omit<Transaction, "id">) => {
-    const transaction: Transaction = {
+  const {
+    setIncomeExpenseHistory,
+    setMonthlyReport,
+    incomeExpenseHistory,
+    monthlyReport,
+  } = useDashBoard();
+  const handleAddTransaction = async (
+    newTransaction: Omit<incomeExpenseHistory, "id">
+  ) => {
+    const client = new NeonClientApi();
+    const statusCode = await client.insertIncomeExpenseHistory({
+      userInfo: {
+        accessToken:
+          localStorage.getItem("income-expense-history-accessToken") || "",
+      },
       ...newTransaction,
-      id: Math.max(...transactions.map((t) => t.id), 0) + 1,
-    };
-    setTransactions((prev) => [transaction, ...prev]);
+    });
+    if (transactions && statusCode === 200) {
+      const incomeExpenseHistory = await getIncomeExpenseHistory();
+      setIncomeExpenseHistory(incomeExpenseHistory);
+      const monthlyReport = await getMonthlyReport();
+      setMonthlyReport(monthlyReport);
+    }
   };
 
-  const handleDeleteClick = (transaction: Transaction) => {
+  const handleDeleteClick = (transaction: incomeExpenseHistory) => {
     setDeleteDialog({
       isOpen: true,
       transaction,
     });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteDialog.transaction) {
-      setTransactions((prev) =>
-        prev.filter((t) => t.id !== deleteDialog.transaction!.id)
-      );
-      setDeleteDialog({ isOpen: false, transaction: null });
+      const client = new NeonClientApi();
+      const statusCode = await client.deleteIncomeExpenseHistory({
+        userInfo: {
+          accessToken:
+            localStorage.getItem("income-expense-history-accessToken") || "",
+        },
+        id: Number(deleteDialog.transaction!.id),
+      });
+      if (statusCode === 200) {
+        const incomeExpenseHistory = await getIncomeExpenseHistory();
+        setIncomeExpenseHistory(incomeExpenseHistory);
+        const monthlyReport = await getMonthlyReport();
+        setMonthlyReport(monthlyReport);
+        setDeleteDialog({ isOpen: false, transaction: null });
+      }
     }
   };
+  const [years, setYears] = useState<string[]>([]);
+  const [currentYearTransactions, setCurrentYearTransactions] = useState<
+    incomeExpenseHistory[]
+  >([]);
 
-  const years = Array.from(
-    new Set(transactions.map((t) => t.date.getFullYear().toString()))
-  ).sort((a, b) => parseInt(b) - parseInt(a));
+  const [mount, setMount] = useState(0);
+  useEffect(() => {
+    if (incomeExpenseHistory) {
+      setYears(
+        Array.from(
+          new Set(
+            incomeExpenseHistory!.map((t) =>
+              new Date(t.date).getFullYear().toString()
+            )
+          )
+        ).sort((a, b) => parseInt(b) - parseInt(a))
+      );
+      const currentYear = incomeExpenseHistory!.filter(
+        (t) => new Date(t.date).getFullYear().toString() === selectedYear
+      );
+      setCurrentYearTransactions(currentYear);
 
-  const currentYearTransactions = transactions.filter(
-    (t) => t.date.getFullYear().toString() === selectedYear
-  );
-
+      if (
+        (mount === 0 || currentYear.length === 0) &&
+        incomeExpenseHistory.length > 0
+      ) {
+        setSelectedYear(
+          new Date(incomeExpenseHistory[0].date).getFullYear().toString()
+        );
+      }
+      setMount(() => {
+        return mount + 1;
+      });
+      setTransactions(incomeExpenseHistory);
+    }
+  }, [selectedYear, monthlyReport]);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -358,9 +396,9 @@ export default function TransactionHistory() {
               </TableHeader>
               <TableBody>
                 <AnimatePresence mode="popLayout">
-                  {currentYearTransactions.map((transaction) => (
+                  {currentYearTransactions.map((transaction, index) => (
                     <motion.tr
-                      key={transaction.id}
+                      key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
@@ -374,26 +412,24 @@ export default function TransactionHistory() {
                       <TableCell>
                         <Badge
                           variant={
-                            transaction.type === "income"
-                              ? "default"
-                              : "secondary"
+                            transaction.type === "0" ? "default" : "secondary"
                           }
                           className={
-                            transaction.type === "income"
+                            transaction.type === "0"
                               ? "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30"
                               : "bg-red-500/20 text-red-500 hover:bg-red-500/30"
                           }>
-                          {transaction.type === "income" ? "収入" : "支出"}
+                          {transaction.type === "0" ? "収入" : "支出"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <span
                           className={
-                            transaction.type === "income"
+                            transaction.type === "0"
                               ? "text-emerald-500"
                               : "text-red-500"
                           }>
-                          ¥{transaction.amount.toLocaleString()}
+                          ¥{transaction.price.toLocaleString()}
                         </span>
                       </TableCell>
                       <TableCell>

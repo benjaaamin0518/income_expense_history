@@ -5,7 +5,11 @@ import DebtRepaymentRatio from "../components/DebtRepaymentRatio";
 import IncomeExpenseChart from "../components/IncomeExpenseChart";
 import TransactionHistory from "../components/TransactionHistory";
 import { UserNav } from "../components/UserNav";
-import { getMonthlyReport, useDashBoard } from "../hooks/useDashBoard";
+import {
+  getIncomeExpenseHistory,
+  getMonthlyReport,
+  useDashBoard,
+} from "../hooks/useDashBoard";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,17 +36,23 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const { setMonthlyReport, monthlyReport } = useDashBoard();
+  const {
+    setMonthlyReport,
+    monthlyReport,
+    setIncomeExpenseHistory,
+    incomeExpenseHistory,
+  } = useDashBoard();
 
   useEffect(() => {
     // データ取得のシミュレーション
     (async () => {
       const monthlyReport = await getMonthlyReport();
-      console.log(monthlyReport);
       setMonthlyReport(monthlyReport);
+      const incomeExpenseHistory = await getIncomeExpenseHistory();
+      setIncomeExpenseHistory(incomeExpenseHistory);
       setIsLoading(false);
     })();
-  }, []);
+  }, [isLoading]);
 
   if (isLoading) {
     return (
