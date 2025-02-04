@@ -20,20 +20,19 @@ import {
 import { useDashBoard, getMonthlyReport } from "../hooks/useDashBoard";
 import { useEffect, useState } from "react";
 import { monthlyReport } from "../type/NeonApiInterface";
-const nowDateStr =
-  new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-1";
-const nowDate = new Date(nowDateStr);
 
 export default function IncomeExpenseChart() {
+  const nowDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const { setMonthlyReport, monthlyReport } = useDashBoard();
   const [diffMonth, setDiffMonth] = useState(0);
   useEffect(() => {
     (async () => {
-      if (monthlyReport.length > 0) {
+      if (monthlyReport && monthlyReport.length > 0) {
         const date = new Date(monthlyReport[monthlyReport.length - 1].month);
         let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
         diffMonth -= nowDate.getMonth() + 1;
         diffMonth += date.getMonth() + 1;
+        console.log(diffMonth);
         setDiffMonth(diffMonth);
       }
     })();

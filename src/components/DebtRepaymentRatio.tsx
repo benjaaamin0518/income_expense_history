@@ -10,10 +10,8 @@ import {
 import { Progress } from "../components/ui/progress";
 import { useDashBoard } from "../hooks/useDashBoard";
 import { useEffect, useState } from "react";
-const nowDateStr =
-  new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-1";
-const nowDate = new Date(nowDateStr);
 export default function DebtRepaymentRatio() {
+  const nowDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const { monthlyReport } = useDashBoard();
   const [debtRepaymentRatio, setDebtRepaymentRatio] = useState(0);
   const [remainingDebt, setRemainingDebt] = useState("");
