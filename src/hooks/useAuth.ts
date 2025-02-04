@@ -1,19 +1,41 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import { NeonClientApi } from "../common/NeonApiClient";
 
 interface AuthState {
   isAuthenticated: boolean;
-  login: () => void;
+  auth: () => void;
+  login: (email: string, password: string) => Promise<number>;
   logout: () => void;
 }
-
+const client = new NeonClientApi();
+export const auth: () => Promise<boolean> = async () => {
+  try {
+    const result = await client.accessTokenAuth({
+      userInfo: {
+        accessToken:
+          localStorage.getItem("income-expense-history-accessToken") || "",
+      },
+    });
+    return result === 200;
+  } catch (error) {
+    return false;
+  }
+};
 export const useAuth = create<AuthState>((set) => ({
-  isAuthenticated: document.cookie.includes('auth='),
-  login: () => {
-    document.cookie = 'auth=true; path=/';
+  isAuthenticated: false,
+  auth: () => {
     set({ isAuthenticated: true });
   },
+  login: async (email: string, password: string) => {
+    console.log(email);
+    const result = await client.loginAuth({ userId: email, password });
+    if (result === 200) {
+      set({ isAuthenticated: true });
+    }
+    return result;
+  },
   logout: () => {
-    document.cookie = 'auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.removeItem("income-expense-history-accessToken");
     set({ isAuthenticated: false });
   },
 }));

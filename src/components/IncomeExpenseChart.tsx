@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '../components/ui/card';
+} from "../components/ui/card";
 import {
   AreaChart,
   Area,
@@ -16,63 +16,31 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-} from 'recharts';
-
-const data = [
-  {
-    month: '1月',
-    income: 320000,
-    expense: 240000,
-    accumulated: 80000,
-    predicted: false,
-  },
-  {
-    month: '2月',
-    income: 350000,
-    expense: 220000,
-    accumulated: 210000,
-    predicted: false,
-  },
-  {
-    month: '3月',
-    income: 330000,
-    expense: 280000,
-    accumulated: 260000,
-    predicted: false,
-  },
-  {
-    month: '4月',
-    income: 340000,
-    expense: 250000,
-    accumulated: 350000,
-    predicted: true,
-  },
-  {
-    month: '5月',
-    income: 360000,
-    expense: 230000,
-    accumulated: 480000,
-    predicted: true,
-  },
-  {
-    month: '6月',
-    income: 380000,
-    expense: 260000,
-    accumulated: 600000,
-    predicted: true,
-  },
-].map((item) => ({
-  ...item,
-  total: item.income + item.accumulated,
-}));
+} from "recharts";
+import { useDashBoard, getMonthlyReport } from "../hooks/useDashBoard";
+import { useEffect, useState } from "react";
+import { monthlyReport } from "../type/NeonApiInterface";
+const nowDateStr =
+  new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-1";
+const nowDate = new Date(nowDateStr);
 
 export default function IncomeExpenseChart() {
+  const { setMonthlyReport, monthlyReport } = useDashBoard();
+  const [diffMonth, setDiffMonth] = useState(0);
+  useEffect(() => {
+    (async () => {
+      const date = new Date(monthlyReport[monthlyReport.length - 1].month);
+      let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
+      diffMonth -= nowDate.getMonth() + 1;
+      diffMonth += date.getMonth() + 1;
+      setDiffMonth(diffMonth);
+    })();
+  }, [monthlyReport]);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-    >
+      transition={{ duration: 0.5, delay: 0.2 }}>
       <Card className="overflow-hidden border-2 dark:border-slate-800">
         <CardHeader className="dark:bg-slate-900/50">
           <CardTitle>収支推移</CardTitle>
@@ -81,9 +49,8 @@ export default function IncomeExpenseChart() {
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={data}
-                margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
-              >
+                data={monthlyReport}
+                margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                     <stop
@@ -114,8 +81,7 @@ export default function IncomeExpenseChart() {
                     id="predictionPattern"
                     patternUnits="userSpaceOnUse"
                     width="4"
-                    height="4"
-                  >
+                    height="4">
                     <path
                       d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2"
                       stroke="currentColor"
@@ -125,7 +91,9 @@ export default function IncomeExpenseChart() {
                   </pattern>
                 </defs>
                 <XAxis
-                  dataKey="month"
+                  dataKey={(data: monthlyReport[number]) =>
+                    new Date(data.month).getMonth() + 1 + "月"
+                  }
                   stroke="hsl(var(--muted-foreground))"
                   axisLine={false}
                   tickLine={false}
@@ -139,31 +107,37 @@ export default function IncomeExpenseChart() {
                 <Tooltip
                   formatter={(value, name, props) => [
                     `¥${value.toLocaleString()}`,
-                    `${name}${props.payload.predicted ? '（予測）' : ''}`,
+                    `${name}${
+                      nowDate < new Date(props.payload.month) ? "（予測）" : ""
+                    }`,
                   ]}
                   contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '0.5rem',
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "0.5rem",
                     boxShadow:
-                      '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                      "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
                   }}
                 />
                 <Legend />
                 <ReferenceLine
-                  x="4月"
+                  x={nowDate.getMonth() + 1 + "月"}
                   stroke="hsl(var(--muted-foreground))"
                   strokeDasharray="3 3"
                   label={{
-                    value: '予測開始',
-                    position: 'top',
-                    fill: 'hsl(var(--muted-foreground))',
+                    value: "予測開始",
+                    position: "top",
+                    fill: "hsl(var(--muted-foreground))",
                     fontSize: 12,
                   }}
                 />
                 <Area
                   type="monotone"
-                  dataKey="income"
+                  dataKey={(data: monthlyReport[number]) =>
+                    nowDate <= new Date(data.month)
+                      ? data.income || data.incomePrediction
+                      : data.income
+                  }
                   name="収入"
                   stackId="1"
                   stroke="rgb(34, 197, 94)"
@@ -173,7 +147,11 @@ export default function IncomeExpenseChart() {
                 />
                 <Area
                   type="monotone"
-                  dataKey="expense"
+                  dataKey={(data: monthlyReport[number]) =>
+                    nowDate <= new Date(data.month)
+                      ? data.expense || data.expensePrediction
+                      : data.expense
+                  }
                   name="支出"
                   stackId="0"
                   stroke="rgb(239, 68, 68)"
@@ -184,11 +162,12 @@ export default function IncomeExpenseChart() {
                 {/* 予測部分の斜線パターン */}
                 <Area
                   type="monotone"
-                  dataKey={(data) =>
-                    data.predicted
-                      ? data.expense >= data.income
-                        ? data.expense
-                        : data.income
+                  dataKey={(data: monthlyReport[number]) =>
+                    nowDate <= new Date(data.month)
+                      ? (data.expense || data.expensePrediction) >=
+                        (data.income || data.incomePrediction)
+                        ? data.expense || data.expensePrediction
+                        : data.income || data.incomePrediction
                       : null
                   }
                   stackId="2"
@@ -212,8 +191,7 @@ export default function IncomeExpenseChart() {
                       id="diagonalPattern"
                       patternUnits="userSpaceOnUse"
                       width="4"
-                      height="4"
-                    >
+                      height="4">
                       <path
                         d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2"
                         stroke="currentColor"
@@ -227,10 +205,20 @@ export default function IncomeExpenseChart() {
               </div>
             </div>
             <div>
-              総収入額: ¥{data[data.length - 1].income.toLocaleString()}
+              総収入額: ¥
+              {monthlyReport.length > 0
+                ? monthlyReport[
+                    monthlyReport.length - 1 - diffMonth
+                  ].income.toLocaleString()
+                : 0}
             </div>
             <div>
-              総支出額: ¥{data[data.length - 1].expense.toLocaleString()}
+              総支出額: ¥
+              {monthlyReport.length > 0
+                ? monthlyReport[
+                    monthlyReport.length - 1 - diffMonth
+                  ].expense.toLocaleString()
+                : 0}
             </div>
           </div>
         </CardContent>

@@ -33,13 +33,14 @@ export type monthlyReport = {
   incomePrediction: number;
   expensePrediction: number;
 }[];
-
-export type insertIncomeExpenseHistoryRequest = accessTokenAuthRequest & {
+export type incomeExpenseHistory = {
   price: number;
   date: string;
   description: string;
   type: IncomeExpenseType;
 };
+export type insertIncomeExpenseHistoryRequest = accessTokenAuthRequest &
+  incomeExpenseHistory;
 export type insertIncomeExpenseHistoryApiRequest =
   Request<insertIncomeExpenseHistoryRequest>;
 export type insertIncomeExpenseHistoryResponse =
@@ -64,3 +65,19 @@ export type deleteIncomeExpenseHistoryResponse =
   | { error: string; status: number };
 export type deleteIncomeExpenseHistoryApiResponse =
   Response<deleteIncomeExpenseHistoryResponse>;
+export type getIncomeExpenseHistoryRequest = accessTokenAuthRequest;
+export type getIncomeExpenseHistoryApiRequest =
+  Request<getIncomeExpenseHistoryRequest>;
+export type getIncomeExpenseHistoryResponse =
+  | {
+      result: incomeExpenseHistory;
+      status: number;
+    }
+  | { error: string; status: number };
+export type getIncomeExpenseHistoryApiResponse =
+  Response<getIncomeExpenseHistoryResponse>;
+export type accessTokenAuthApiRequest = Request<accessTokenAuthRequest>;
+export type accessTokenAuthResponse =
+  | { status: number }
+  | { error: string; status: number };
+export type accessTokenAuthApiResponse = Response<accessTokenAuthResponse>;

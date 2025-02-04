@@ -8,9 +8,33 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
-
+import { useDashBoard } from "../hooks/useDashBoard";
+import { useEffect, useState } from "react";
+const nowDateStr =
+  new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-1";
+const nowDate = new Date(nowDateStr);
 export default function DebtRepaymentRatio() {
-  const debtRepaymentRatio = 65;
+  const { monthlyReport } = useDashBoard();
+  const [debtRepaymentRatio, setDebtRepaymentRatio] = useState(0);
+  const [remainingDebt, setRemainingDebt] = useState("");
+  useEffect(() => {
+    if (monthlyReport.length > 0) {
+      const date = new Date(monthlyReport[monthlyReport.length - 1].month);
+      let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
+      diffMonth -= nowDate.getMonth() + 1;
+      diffMonth += date.getMonth() + 1;
+      const expense =
+        monthlyReport.length > 0
+          ? monthlyReport[monthlyReport.length - 1 - diffMonth].expense
+          : 0;
+      const income =
+        monthlyReport.length > 0
+          ? monthlyReport[monthlyReport.length - 1 - diffMonth].income
+          : 0;
+      setRemainingDebt((expense - income).toLocaleString());
+      setDebtRepaymentRatio(Math.round((income / expense) * 100 * 100) / 100);
+    }
+  }, [monthlyReport]);
 
   return (
     <motion.div
@@ -29,9 +53,12 @@ export default function DebtRepaymentRatio() {
               </span>
               <span className="text-sm text-muted-foreground">目標: 100%</span>
             </div>
-            <Progress value={debtRepaymentRatio} className="h-3" />
+            <Progress
+              value={debtRepaymentRatio >= 100 ? 100 : debtRepaymentRatio}
+              className="h-3"
+            />
             <p className="text-sm text-muted-foreground">
-              残り返済額: ¥1,500,000
+              残り返済額: {remainingDebt}円
             </p>
           </div>
         </CardContent>

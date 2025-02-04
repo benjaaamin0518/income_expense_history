@@ -1,24 +1,36 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth, auth as accessTokenAuth } from "./hooks/useAuth";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { userInfo } from "os";
 
 function App() {
-  const { isAuthenticated } = useAuth();
-
+  let { isAuthenticated, auth } = useAuth();
+  useEffect(() => {
+    console.log(localStorage.getItem("income-expense-history-accessToken"));
+    (async () => {
+      const isAuthenticated = await accessTokenAuth();
+      isAuthenticated && auth();
+    })();
+  }, []);
   return (
     <div>
       <Routes>
         <Route
           path="/login"
           element={
-            isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+            useAuth().isAuthenticated ? (
+              <Navigate to="/" replace />
+            ) : (
+              <LoginPage />
+            )
           }
         />
         <Route
           path="/"
           element={
-            isAuthenticated ? (
+            useAuth().isAuthenticated ? (
               <DashboardPage />
             ) : (
               <Navigate to="/login" replace />

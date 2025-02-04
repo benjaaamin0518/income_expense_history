@@ -1,10 +1,15 @@
 import express, { response } from "express";
 import cors from "cors";
 import { NeonApi } from "./NeonApi";
+require("dotenv").config();
 import {
+  accessTokenAuthApiRequest,
+  accessTokenAuthApiResponse,
   accessTokenAuthRequest,
   deleteIncomeExpenseHistoryApiRequest,
   deleteIncomeExpenseHistoryApiResponse,
+  getIncomeExpenseHistoryApiRequest,
+  getIncomeExpenseHistoryApiResponse,
   getMonthlyReportApiRequest,
   getMonthlyReportApiResponse,
   getMonthlyReportRequest,
@@ -55,7 +60,7 @@ app.post(
     }
   }
 );
-app.get(
+app.post(
   "/api/v1/get/monthlyReport",
   async (req: getMonthlyReportApiRequest, res: getMonthlyReportApiResponse) => {
     try {
@@ -112,6 +117,51 @@ app.post(
       const { userInfo, id } = req.body;
       const userId = await initAccessTokenAuth(userInfo);
       const result = await neonApi.deleteIncomeExpenseHistory(userId, id);
+      // ユーザー情報とトークンをクライアントに返す
+      res.status(200).json({
+        status: 200, // ステータスコード
+        result,
+      });
+      return;
+    } catch (error: any) {
+      res.status(500).json({
+        error: error.message,
+        status: 500, // ステータスコード
+      });
+      return;
+    }
+  }
+);
+app.post(
+  "/api/v1/auth/accessToken",
+  async (req: accessTokenAuthApiRequest, res: accessTokenAuthApiResponse) => {
+    try {
+      const { userInfo } = req.body;
+      const userId = await initAccessTokenAuth(userInfo);
+      // ユーザー情報とトークンをクライアントに返す
+      res.status(200).json({
+        status: 200, // ステータスコード
+      });
+      return;
+    } catch (error: any) {
+      res.status(500).json({
+        error: error.message,
+        status: 500, // ステータスコード
+      });
+      return;
+    }
+  }
+);
+app.post(
+  "/api/v1/get/incomeExpenseHistory",
+  async (
+    req: getIncomeExpenseHistoryApiRequest,
+    res: getIncomeExpenseHistoryApiResponse
+  ) => {
+    try {
+      const { userInfo } = req.body;
+      const userId = await initAccessTokenAuth(userInfo);
+      const result = await neonApi.getIncomeExpenseHistory(userId);
       // ユーザー情報とトークンをクライアントに返す
       res.status(200).json({
         status: 200, // ステータスコード
