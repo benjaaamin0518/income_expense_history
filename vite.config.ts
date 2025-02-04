@@ -1,25 +1,16 @@
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
-import { dirname, resolve } from "node:path";
-// https://vitejs.dev/config/
+import { defineConfig } from "vite";
+
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@/*": path.resolve(__dirname, "../../*"),
-    },
-  },
-  server: {
-    fs: {
-      cachedChecks: false,
-    },
-  },
   build: {
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, "src/main.tsx"),
-      },
-    },
+    emptyOutDir: true,
+    outDir: "./dist",
+    sourcemap: "hidden",
+  },
+  envDir: "./",
+  plugins: [react()],
+  root: "./",
+  server: {
+    port: 3000,
   },
 });
