@@ -29,11 +29,13 @@ export default function IncomeExpenseChart() {
   const [diffMonth, setDiffMonth] = useState(0);
   useEffect(() => {
     (async () => {
-      const date = new Date(monthlyReport[monthlyReport.length - 1].month);
-      let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
-      diffMonth -= nowDate.getMonth() + 1;
-      diffMonth += date.getMonth() + 1;
-      setDiffMonth(diffMonth);
+      if (monthlyReport.length > 0) {
+        const date = new Date(monthlyReport[monthlyReport.length - 1].month);
+        let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
+        diffMonth -= nowDate.getMonth() + 1;
+        diffMonth += date.getMonth() + 1;
+        setDiffMonth(diffMonth);
+      }
     })();
   }, [monthlyReport]);
   return (
@@ -206,18 +208,22 @@ export default function IncomeExpenseChart() {
             </div>
             <div>
               総収入額: ¥
-              {monthlyReport.length > 0
-                ? monthlyReport[
-                    monthlyReport.length - 1 - diffMonth
-                  ].income.toLocaleString()
+              {monthlyReport && monthlyReport.length > 0
+                ? monthlyReport[monthlyReport.length - 1 - diffMonth]
+                  ? monthlyReport[
+                      monthlyReport.length - 1 - diffMonth
+                    ].income.toLocaleString()
+                  : 0
                 : 0}
             </div>
             <div>
               総支出額: ¥
-              {monthlyReport.length > 0
-                ? monthlyReport[
-                    monthlyReport.length - 1 - diffMonth
-                  ].expense.toLocaleString()
+              {monthlyReport && monthlyReport.length > 0
+                ? monthlyReport[monthlyReport.length - 1 - diffMonth]
+                  ? monthlyReport[
+                      monthlyReport.length - 1 - diffMonth
+                    ].expense.toLocaleString()
+                  : 0
                 : 0}
             </div>
           </div>

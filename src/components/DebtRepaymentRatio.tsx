@@ -18,18 +18,22 @@ export default function DebtRepaymentRatio() {
   const [debtRepaymentRatio, setDebtRepaymentRatio] = useState(0);
   const [remainingDebt, setRemainingDebt] = useState("");
   useEffect(() => {
-    if (monthlyReport.length > 0) {
+    if (monthlyReport && monthlyReport.length > 0) {
       const date = new Date(monthlyReport[monthlyReport.length - 1].month);
       let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
       diffMonth -= nowDate.getMonth() + 1;
       diffMonth += date.getMonth() + 1;
       const expense =
-        monthlyReport.length > 0
-          ? monthlyReport[monthlyReport.length - 1 - diffMonth].expense
+        monthlyReport && monthlyReport.length > 0
+          ? monthlyReport[monthlyReport.length - 1 - diffMonth]
+            ? monthlyReport[monthlyReport.length - 1 - diffMonth].expense
+            : 0
           : 0;
       const income =
-        monthlyReport.length > 0
-          ? monthlyReport[monthlyReport.length - 1 - diffMonth].income
+        monthlyReport && monthlyReport.length > 0
+          ? monthlyReport[monthlyReport.length - 1 - diffMonth]
+            ? monthlyReport[monthlyReport.length - 1 - diffMonth].income
+            : 0
           : 0;
       setRemainingDebt((expense - income).toLocaleString());
       setDebtRepaymentRatio(
