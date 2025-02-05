@@ -69,7 +69,7 @@ export default function IncomeExpenseChart() {
                     <stop
                       offset="5%"
                       stopColor="rgb(239, 68, 68)"
-                      stopOpacity={0.8}
+                      stopOpacity={0.5}
                     />
                     <stop
                       offset="95%"
