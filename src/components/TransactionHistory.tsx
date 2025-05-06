@@ -97,6 +97,14 @@ function AddTransactionDialog({
     setIsSubmitting(true);
 
     try {
+      if (mode == "lending" && selectedUserId == "") {
+        alert("ユーザーを選択してください。");
+        return;
+      }
+      if (date == "") {
+        alert("日付を入力してください。");
+        return;
+      }
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const selectedUser = borrowedUsers.find(
@@ -188,6 +196,7 @@ function AddTransactionDialog({
                   mode="single"
                   selected={date ? new Date(date) : undefined}
                   onSelect={(date) => date && setDate(date.toISOString())}
+                  required
                   initialFocus
                 />
               </PopoverContent>
