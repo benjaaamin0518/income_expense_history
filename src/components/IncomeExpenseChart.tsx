@@ -1,5 +1,3 @@
-"use client";
-
 import { motion } from "framer-motion";
 import {
   Card,
@@ -18,25 +16,25 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useDashBoard, getMonthlyReport } from "../hooks/useDashBoard";
+import { useBorrowedUsers } from "../hooks/useBorrowedUsers";
 import { useEffect, useState } from "react";
 import { monthlyReport } from "../type/NeonApiInterface";
 
 export default function IncomeExpenseChart() {
   const nowDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const { setMonthlyReport, monthlyReport } = useDashBoard();
+  const { mode, setMonthlyReport, monthlyReport } = useDashBoard();
+
   const [diffMonth, setDiffMonth] = useState(0);
   useEffect(() => {
-    (async () => {
-      if (monthlyReport && monthlyReport.length > 0) {
-        const date = new Date(monthlyReport[monthlyReport.length - 1].month);
-        let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
-        diffMonth -= nowDate.getMonth() + 1;
-        diffMonth += date.getMonth() + 1;
-        console.log(diffMonth);
-        setDiffMonth(diffMonth);
-      }
-    })();
+    if (monthlyReport && monthlyReport.length > 0) {
+      const date = new Date(monthlyReport[monthlyReport.length - 1].month);
+      let diffMonth = (date.getFullYear() - nowDate.getFullYear()) * 12;
+      diffMonth -= nowDate.getMonth() + 1;
+      diffMonth += date.getMonth() + 1;
+      setDiffMonth(diffMonth);
+    }
   }, [monthlyReport]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -77,15 +75,15 @@ export default function IncomeExpenseChart() {
                       stopOpacity={0.2}
                     />
                   </linearGradient>
-                  {/* 予測データ用のパターン */}
                   <pattern
                     id="predictionPattern"
                     patternUnits="userSpaceOnUse"
                     width="4"
                     height="4">
                     <path
-                      d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2"
+                      d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2 "
                       stroke="currentColor"
+                      fill="none"
                       strokeWidth="0.5"
                       opacity="0.3"
                     />
@@ -139,7 +137,7 @@ export default function IncomeExpenseChart() {
                       ? data.income || data.incomePrediction
                       : data.income
                   }
-                  name="収入"
+                  name={mode === "borrowing" ? "返済" : "返済"}
                   stackId="0"
                   stroke="rgb(34, 197, 94)"
                   fill="url(#colorIncome)"
@@ -153,7 +151,7 @@ export default function IncomeExpenseChart() {
                       ? data.expense || data.expensePrediction
                       : data.expense
                   }
-                  name="支出"
+                  name={mode === "borrowing" ? "借入" : "貸付"}
                   stackId="1"
                   stroke="rgb(239, 68, 68)"
                   fill="url(#colorExpense)"
@@ -206,7 +204,7 @@ export default function IncomeExpenseChart() {
               </div>
             </div>
             <div>
-              総収入額: ¥
+              {mode === "borrowing" ? "総返済額" : "総貸付額"}: ¥
               {monthlyReport && monthlyReport.length > 0
                 ? monthlyReport[monthlyReport.length - 1 - diffMonth]
                   ? monthlyReport[
@@ -216,7 +214,7 @@ export default function IncomeExpenseChart() {
                 : 0}
             </div>
             <div>
-              総支出額: ¥
+              {mode === "borrowing" ? "総借入額" : "総返済額"}: ¥
               {monthlyReport && monthlyReport.length > 0
                 ? monthlyReport[monthlyReport.length - 1 - diffMonth]
                   ? monthlyReport[

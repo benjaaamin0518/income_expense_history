@@ -4,6 +4,7 @@ import DashboardPage from "./pages/DashboardPage";
 import { useAuth, auth as accessTokenAuth } from "./hooks/useAuth";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { userInfo } from "os";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   let { isAuthenticated, auth } = useAuth();
@@ -27,6 +28,7 @@ function App() {
             )
           }
         />
+        <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/"
           element={

@@ -1,5 +1,3 @@
-"use client";
-
 import { motion } from "framer-motion";
 import {
   Card,
@@ -9,12 +7,15 @@ import {
 } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { useDashBoard } from "../hooks/useDashBoard";
+import { useBorrowedUsers } from "../hooks/useBorrowedUsers";
 import { useEffect, useState } from "react";
+
 export default function DebtRepaymentRatio() {
   const nowDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const { monthlyReport } = useDashBoard();
+  const { mode, monthlyReport } = useDashBoard();
   const [debtRepaymentRatio, setDebtRepaymentRatio] = useState(0);
   const [remainingDebt, setRemainingDebt] = useState("");
+
   useEffect(() => {
     if (monthlyReport && monthlyReport.length > 0) {
       const date = new Date(monthlyReport[monthlyReport.length - 1].month);
@@ -51,7 +52,9 @@ export default function DebtRepaymentRatio() {
       transition={{ duration: 0.5 }}>
       <Card className="overflow-hidden border-2 dark:border-slate-800">
         <CardHeader className="dark:bg-slate-900/50">
-          <CardTitle>借金返済率</CardTitle>
+          <CardTitle>
+            {mode === "borrowing" ? "借金返済率" : "貸付回収率"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-4">
@@ -74,7 +77,7 @@ export default function DebtRepaymentRatio() {
               className="h-3"
             />
             <p className="text-sm text-muted-foreground">
-              残り返済額: {remainingDebt}円
+              {mode === "borrowing" ? "残り返済額" : "残り回収額"}: {remainingDebt}円
             </p>
           </div>
         </CardContent>

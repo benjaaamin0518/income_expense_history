@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import DebtRepaymentRatio from "../components/DebtRepaymentRatio";
-import IncomeExpenseChart from "../components/IncomeExpenseChart";
-import TransactionHistory from "../components/TransactionHistory";
-import { UserNav } from "../components/UserNav";
+import { ModeToggle } from "../components/ModeToggle";
+import { BorrowingGroup } from "../components/BorrowingGroup";
+import { LendingGroup } from "../components/LendingGroup";
 import {
   getIncomeExpenseHistory,
   getMonthlyReport,
   useDashBoard,
 } from "../hooks/useDashBoard";
+import { UserNav } from "../components/UserNav";
+import { useBorrowedUsers } from "../hooks/useBorrowedUsers";
+import { isMobile } from "react-device-detect";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,11 +43,16 @@ export default function DashboardPage() {
     monthlyReport,
     setIncomeExpenseHistory,
     incomeExpenseHistory,
+    mode,
+    setMode,
   } = useDashBoard();
-
+  const { borrowedUsers, selectedUserId, setSelectedUserId, setBorrowedUsers } =
+    useBorrowedUsers();
   useEffect(() => {
     // データ取得のシミュレーション
     (async () => {
+      setSelectedUserId("all");
+      setMode("borrowing");
       const monthlyReport = await getMonthlyReport();
       setMonthlyReport(monthlyReport);
       const incomeExpenseHistory = await getIncomeExpenseHistory();
@@ -78,13 +85,20 @@ export default function DashboardPage() {
         transition={{ duration: 0.5 }}
         className="border-b dark:border-slate-800 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="px-8 flex h-16 items-center justify-between">
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-            借金ダッシュボード
-          </motion.h1>
+            className="flex items-center gap-4">
+            {isMobile ? (
+              <></>
+            ) : (
+              <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                借金ダッシュボード
+              </h1>
+            )}
+            <ModeToggle />
+          </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -98,41 +112,12 @@ export default function DashboardPage() {
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
-          className="grid gap-8">
-          <motion.div variants={itemVariants}>
-            <DebtRepaymentRatio />
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <IncomeExpenseChart />
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <TransactionHistory />
-          </motion.div>
+          animate="visible">
+          <AnimatePresence mode="wait">
+            {mode === "borrowing" ? <BorrowingGroup /> : <LendingGroup />}
+          </AnimatePresence>
         </motion.div>
       </main>
-
-      {/* スクロールインジケーター */}
-      <motion.div
-        className="fixed bottom-8 right-8 bg-primary/90 text-primary-foreground rounded-full p-4 shadow-lg cursor-pointer hover:scale-110 transition-transform"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round">
-          <path d="m18 15-6-6-6 6" />
-        </svg>
-      </motion.div>
     </div>
   );
 }

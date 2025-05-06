@@ -1,21 +1,33 @@
 import {
   accessTokenAuthRequest,
   accessTokenAuthResponse,
+  BorrowedUser,
   deleteIncomeExpenseHistoryRequest,
   deleteIncomeExpenseHistoryResponse,
+  getBorrowedUsersRequest,
+  getBorrowedUsersResponse,
   getIncomeExpenseHistoryApiRequest,
   getIncomeExpenseHistoryRequest,
   getIncomeExpenseHistoryResponse,
+  getInvitationsRequest,
+  getInvitationsResponse,
   getMonthlyReportRequest,
   getMonthlyReportResponse,
   incomeExpenseHistory,
+  insertBorrowedUserRequest,
+  insertBorrowedUserResponse,
   insertIncomeExpenseHistoryRequest,
   insertIncomeExpenseHistoryResponse,
+  insertInvitationRequest,
+  insertInvitationResponse,
+  insertUserInfoRequest,
+  insertUserInfoResponse,
   loginAuthApiRequest,
   loginAuthApiResponse,
   loginAuthRequest,
   loginAuthResponse,
   monthlyReport,
+  UserInvitation,
 } from "../type/NeonApiInterface";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { error } from "console";
@@ -216,6 +228,144 @@ class NeonClientApi {
       console.error(e);
     } finally {
       return incomeExpenseHistory;
+    }
+  }
+  public async getInvitations(param: getInvitationsRequest) {
+    let statusCode = 200;
+    let invitations: UserInvitation[] = [];
+    try {
+      const options: AxiosRequestConfig<getInvitationsRequest> = {
+        url: `${this._backendApiUrl}/api/v1/get/invitations`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<getInvitationsResponse>,
+        getInvitationsRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+          if ("result" in res.data) {
+            invitations = res.data.result;
+          }
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return invitations;
+    }
+  }
+  public async getBorrowedUsers(param: getBorrowedUsersRequest) {
+    let statusCode = 200;
+    let borrowedUsers: BorrowedUser[] = [];
+    try {
+      const options: AxiosRequestConfig<getBorrowedUsersRequest> = {
+        url: `${this._backendApiUrl}/api/v1/get/borrowedUsers`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<getBorrowedUsersResponse>,
+        getBorrowedUsersRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+          if ("result" in res.data) {
+            borrowedUsers = res.data.result;
+          }
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return borrowedUsers;
+    }
+  }
+  public async insertBorrowedUser(param: insertBorrowedUserRequest) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<insertBorrowedUserRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/insertBorrowedUser`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<insertBorrowedUserResponse>,
+        insertBorrowedUserRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async insertInvitation(param: insertInvitationRequest) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<insertInvitationRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/insertInvitation`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<insertInvitationResponse>,
+        insertInvitationRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async insertUserInfo(param: insertUserInfoRequest) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<insertUserInfoRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/insertUserInfo`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+        any,
+        AxiosResponse<insertUserInfoResponse>,
+        insertUserInfoRequest
+      >(options)
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
     }
   }
 }

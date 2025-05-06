@@ -1,14 +1,13 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
 import {
-  CalendarIcon,
-  MoreHorizontal,
   Plus,
+  MoreHorizontal,
+  CalendarIcon,
   Trash2,
   DollarSign,
-  AlignEndHorizontal,
+  CheckCircle2,
+  FilterIcon,
 } from "lucide-react";
 import {
   Table,
@@ -67,12 +66,16 @@ import {
 } from "../components/ui/popover";
 import { cn } from "../lib/utils";
 import { incomeExpenseHistory } from "../type/NeonApiInterface";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
 import {
   getIncomeExpenseHistory,
   getMonthlyReport,
   useDashBoard,
 } from "../hooks/useDashBoard";
+import { useBorrowedUsers } from "../hooks/useBorrowedUsers";
 import { NeonClientApi } from "../common/NeonApiClient";
+import { isMobile } from "react-device-detect";
 
 function AddTransactionDialog({
   onAdd,
@@ -84,28 +87,35 @@ function AddTransactionDialog({
   const [type, setType] = useState<"0" | "1">("0");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { borrowedUsers } = useBorrowedUsers();
+  const { mode } = useDashBoard();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // 送信処理のシミュレーション
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      const selectedUser = borrowedUsers.find(
+        (u) => u.id.toString() === selectedUserId
+      );
       onAdd({
         date,
-        type,
+        type: mode === "lending" ? (type === "0" ? "1" : "0") : type,
         description,
         price: Number(price),
+        borrowed_user_id: selectedUserId,
+        borrowed_user_name: selectedUser?.name,
       });
 
-      // フォームをリセット
       setDate("");
       setType("0");
       setDescription("");
       setPrice("");
+      setSelectedUserId("");
       setIsOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -113,7 +123,16 @@ function AddTransactionDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setDate("");
+        setType("0");
+        setDescription("");
+        setPrice("");
+        setSelectedUserId("");
+        setIsOpen(open);
+      }}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
@@ -126,6 +145,27 @@ function AddTransactionDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid gap-2">
+            <Label htmlFor="borrowedUser">
+              {mode === "borrowing" ? "借りたユーザー" : "貸したユーザー"}
+            </Label>
+            <Select
+              value={selectedUserId}
+              onValueChange={setSelectedUserId}
+              required>
+              <SelectTrigger>
+                <SelectValue placeholder="ユーザーを選択" />
+              </SelectTrigger>
+              <SelectContent>
+                {borrowedUsers.map((user) => (
+                  <SelectItem key={user.id} value={user.id.toString()}>
+                    {user.name}
+                    {user.status === "pending" && " (未登録)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="date">日付</Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -137,7 +177,7 @@ function AddTransactionDialog({
                   )}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? (
-                    format(date, "PPP", { locale: ja })
+                    format(new Date(date), "PPP", { locale: ja })
                   ) : (
                     <span>日付を選択</span>
                   )}
@@ -146,10 +186,8 @@ function AddTransactionDialog({
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={new Date(date)}
-                  onSelect={(date) =>
-                    date && setDate(date.toLocaleDateString())
-                  }
+                  selected={date ? new Date(date) : undefined}
+                  onSelect={(date) => date && setDate(date.toISOString())}
                   initialFocus
                 />
               </PopoverContent>
@@ -164,8 +202,12 @@ function AddTransactionDialog({
                 <SelectValue placeholder="種類を選択" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">収入</SelectItem>
-                <SelectItem value="1">支出</SelectItem>
+                <SelectItem value="0">
+                  {mode === "borrowing" ? "返済" : "貸付"}
+                </SelectItem>
+                <SelectItem value="1">
+                  {mode === "borrowing" ? "借入" : "返済"}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -242,8 +284,10 @@ function DeleteTransactionDialog({
           <AlertDialogDescription>
             以下の取引を削除してもよろしいですか？
             <br />
-            {format(transaction.date, "yyyy年MM月dd日", { locale: ja })}の
-            {transaction.description}（¥{transaction.price.toLocaleString()}）
+            {format(new Date(transaction.date), "yyyy年MM月dd日", {
+              locale: ja,
+            })}
+            の{transaction.description}（¥{transaction.price.toLocaleString()}）
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -260,8 +304,10 @@ function DeleteTransactionDialog({
 }
 
 export default function TransactionHistory() {
-  const [selectedYear, setSelectedYear] = useState<string>("2024");
-  const [transactions, setTransactions] = useState<incomeExpenseHistory[]>();
+  const [transactions, setTransactions] = useState<incomeExpenseHistory[]>([]);
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString()
+  );
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     transaction: incomeExpenseHistory | null;
@@ -269,12 +315,36 @@ export default function TransactionHistory() {
     isOpen: false,
     transaction: null,
   });
+
   const {
+    mode,
     setIncomeExpenseHistory,
     setMonthlyReport,
     incomeExpenseHistory,
     monthlyReport,
   } = useDashBoard();
+
+  const { selectedUserId } = useBorrowedUsers();
+
+  useEffect(() => {
+    if (incomeExpenseHistory) {
+      const filteredTransactions =
+        selectedUserId === "all"
+          ? incomeExpenseHistory.filter((t) => {
+              const transactionYear = new Date(t.date).getFullYear().toString();
+              return transactionYear === selectedYear;
+            })
+          : incomeExpenseHistory.filter((t) => {
+              const transactionYear = new Date(t.date).getFullYear().toString();
+              return (
+                t.borrowed_user_id === selectedUserId &&
+                transactionYear === selectedYear
+              );
+            });
+      setTransactions(filteredTransactions);
+    }
+  }, [selectedUserId, incomeExpenseHistory, selectedYear]);
+
   const handleAddTransaction = async (
     newTransaction: Omit<incomeExpenseHistory, "id">
   ) => {
@@ -285,12 +355,19 @@ export default function TransactionHistory() {
           localStorage.getItem("income-expense-history-accessToken") || "",
       },
       ...newTransaction,
+      mode,
     });
     if (transactions && statusCode === 200) {
-      const incomeExpenseHistory = await getIncomeExpenseHistory();
-      setIncomeExpenseHistory(incomeExpenseHistory);
-      const monthlyReport = await getMonthlyReport();
-      setMonthlyReport(monthlyReport);
+      if (selectedUserId) {
+        const incomeExpenseHistory = await getIncomeExpenseHistory(
+          selectedUserId,
+          mode
+        );
+        setIncomeExpenseHistory(incomeExpenseHistory);
+        const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+        setMonthlyReport(monthlyReport);
+        return;
+      }
     }
   };
 
@@ -312,11 +389,16 @@ export default function TransactionHistory() {
         id: Number(deleteDialog.transaction!.id),
       });
       if (statusCode === 200) {
-        const incomeExpenseHistory = await getIncomeExpenseHistory();
-        setIncomeExpenseHistory(incomeExpenseHistory);
-        const monthlyReport = await getMonthlyReport();
-        setMonthlyReport(monthlyReport);
-        setDeleteDialog({ isOpen: false, transaction: null });
+        if (selectedUserId) {
+          const incomeExpenseHistory = await getIncomeExpenseHistory(
+            selectedUserId,
+            mode
+          );
+          setIncomeExpenseHistory(incomeExpenseHistory);
+          const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+          setMonthlyReport(monthlyReport);
+          setDeleteDialog({ isOpen: false, transaction: null });
+        }
       }
     }
   };
@@ -355,7 +437,7 @@ export default function TransactionHistory() {
       });
       setTransactions(incomeExpenseHistory);
     }
-  }, [selectedYear, monthlyReport]);
+  }, [selectedYear, monthlyReport, incomeExpenseHistory]);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -389,6 +471,15 @@ export default function TransactionHistory() {
                 <TableRow className="hover:bg-muted/50">
                   <TableHead>日付</TableHead>
                   <TableHead>説明</TableHead>
+                  <TableHead>
+                    {mode === "borrowing"
+                      ? isMobile
+                        ? "借りた..."
+                        : "借りたユーザー"
+                      : isMobile
+                      ? "貸した..."
+                      : "貸したユーザー"}
+                  </TableHead>
                   <TableHead>種類</TableHead>
                   <TableHead className="text-right">金額</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
@@ -396,36 +487,61 @@ export default function TransactionHistory() {
               </TableHeader>
               <TableBody>
                 <AnimatePresence mode="popLayout">
-                  {currentYearTransactions.map((transaction, index) => (
+                  {currentYearTransactions.map((transaction) => (
                     <motion.tr
-                      key={index}
+                      key={transaction.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       className="hover:bg-muted/50">
                       <TableCell className="font-medium">
-                        {format(transaction.date, "MM月dd日 (E)", {
+                        {format(new Date(transaction.date), "MM月dd日 (E)", {
                           locale: ja,
                         })}
                       </TableCell>
                       <TableCell>{transaction.description}</TableCell>
                       <TableCell>
+                        <div className="flex items-center gap-2">
+                          {transaction.borrowed_user_name}
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <Badge
                           variant={
-                            transaction.type === "0" ? "default" : "secondary"
+                            mode === "borrowing"
+                              ? transaction.type === "0"
+                                ? "default"
+                                : "secondary"
+                              : transaction.type === "0"
+                              ? "default"
+                              : "secondary"
                           }
                           className={
-                            transaction.type === "0"
+                            mode === "borrowing"
+                              ? transaction.type === "0"
+                                ? "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30"
+                                : "bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                              : transaction.type === "0"
                               ? "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30"
                               : "bg-red-500/20 text-red-500 hover:bg-red-500/30"
                           }>
-                          {transaction.type === "0" ? "収入" : "支出"}
+                          {mode === "borrowing"
+                            ? transaction.type === "0"
+                              ? "返済"
+                              : "借入"
+                            : transaction.type === "0"
+                            ? "返済"
+                            : "貸付"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <span
                           className={
-                            transaction.type === "0"
+                            mode === "borrowing"
+                              ? transaction.type === "0"
+                                ? "text-emerald-500"
+                                : "text-red-500"
+                              : transaction.type === "0"
                               ? "text-emerald-500"
                               : "text-red-500"
                           }>
