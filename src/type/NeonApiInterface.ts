@@ -141,10 +141,13 @@ export type accessTokenAuthResponse =
   | { error: string; status: number };
 export type accessTokenAuthApiResponse = Response<accessTokenAuthResponse>;
 
-export type getInvitationsRequest = accessTokenAuthRequest;
+export type getInvitationsRequest = { code: string };
 export type getInvitationsApiRequest = Request<getInvitationsRequest>;
 export type getInvitationsResponse =
-  | { status: number; result: UserInvitation[] }
+  | {
+      status: number;
+      result: { invitation: UserInvitation; user: BorrowedUser };
+    }
   | { error: string; status: number };
 export type getInvitationsApiResponse = Response<getInvitationsResponse>;
 

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import { useAuth, auth as accessTokenAuth } from "./hooks/useAuth";
@@ -8,8 +8,11 @@ import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   let { isAuthenticated, auth } = useAuth();
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     console.log(localStorage.getItem("income-expense-history-accessToken"));
+    const code = searchParams.get("code");
+    if (code) return;
     (async () => {
       const isAuthenticated = await accessTokenAuth();
       isAuthenticated && auth();

@@ -230,12 +230,25 @@ class NeonClientApi {
       return incomeExpenseHistory;
     }
   }
-  public async getInvitations(param: getInvitationsRequest) {
+  public async getInvitation(param: getInvitationsRequest) {
     let statusCode = 200;
-    let invitations: UserInvitation[] = [];
+    let resultInvitation: UserInvitation = {
+      id: 0,
+      invitation_code: "",
+      expires_at: "",
+      created_at: "",
+      borrowed_user_id: 0,
+    };
+    let resultUser: BorrowedUser = {
+      id: 0,
+      name: "",
+      email: null,
+      status: "pending",
+      created_at: "",
+    };
     try {
       const options: AxiosRequestConfig<getInvitationsRequest> = {
-        url: `${this._backendApiUrl}/api/v1/get/invitations`,
+        url: `${this._backendApiUrl}/api/v1/get/invitation`,
         method: "POST",
         data: param,
       };
@@ -247,7 +260,9 @@ class NeonClientApi {
         .then((res) => {
           statusCode = res.data.status;
           if ("result" in res.data) {
-            invitations = res.data.result;
+            const { invitation, user } = res.data.result;
+            resultInvitation = invitation;
+            resultUser = user;
           }
         })
         .catch((error) => {
@@ -257,7 +272,7 @@ class NeonClientApi {
     } catch (e) {
       console.error(e);
     } finally {
-      return invitations;
+      return { invitation: resultInvitation, user: resultUser };
     }
   }
   public async getBorrowedUsers(param: getBorrowedUsersRequest) {

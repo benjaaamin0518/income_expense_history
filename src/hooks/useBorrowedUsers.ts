@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { BorrowedUser, UserInvitation } from "../type/NeonApiInterface";
+import {
+  BorrowedUser,
+  getInvitationsResponse,
+  UserInvitation,
+} from "../type/NeonApiInterface";
 import { NeonClientApi } from "../common/NeonApiClient";
 import { getMonthlyReport, useDashBoard } from "./useDashBoard";
 
@@ -24,17 +28,29 @@ export const getBorrowedUsers = async (): Promise<BorrowedUser[]> => {
     return [];
   }
 };
-export const getInvitations = async (): Promise<UserInvitation[]> => {
+export const getInvitation = async (
+  code: string
+): Promise<{ invitation: UserInvitation; user: BorrowedUser }> => {
   try {
-    const result = await client.getInvitations({
-      userInfo: {
-        accessToken:
-          localStorage.getItem("income-expense-history-accessToken") || "",
-      },
-    });
+    const result = await client.getInvitation({ code });
     return result;
   } catch (error) {
-    return [];
+    return {
+      invitation: {
+        id: 0,
+        invitation_code: "",
+        expires_at: "",
+        created_at: "",
+        borrowed_user_id: 0,
+      },
+      user: {
+        id: 0,
+        name: "",
+        email: null,
+        status: "pending",
+        created_at: "",
+      },
+    };
   }
 };
 export const createBorrowedUser = async (
@@ -80,13 +96,9 @@ export const createInvitation = async (
 export const getInvitationByCode = async (
   code: string
 ): Promise<{ invitation: UserInvitation; user: BorrowedUser } | null> => {
-  const invitations = await getInvitations();
-  const invitation = invitations.find((i) => i.invitation_code === code);
-  if (!invitation) return null;
-  const borrowedUsers = await getBorrowedUsers();
-  const user = borrowedUsers.find((u) => u.id === invitation.borrowed_user_id);
-  if (!user) return null;
-  // console.log(user)
+  const { invitation, user } = await getInvitation(code);
+  if (invitation.invitation_code !== code) return null;
+  if (user.id == 0) return null;
   return { invitation, user };
 };
 
