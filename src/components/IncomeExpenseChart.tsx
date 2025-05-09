@@ -177,7 +177,30 @@ export default function IncomeExpenseChart() {
                 />
                 <Area
                   type="monotone"
-                  dataKey={(data: monthlyReport[number]) => data.reasoning}
+                  dataKey={(data: monthlyReport[number]) =>
+                    (data.reasoning || "").split("。").map((p, index, arr) =>
+                      p !== "" ? (
+                        p
+                          .split("、")
+                          .map((p2, index2, arr2) =>
+                            p2 !== "" ? (
+                              <div key={index}>
+                                <p>
+                                  {arr2.length - 1 == index2
+                                    ? p2 + "。"
+                                    : p2 + "、"}
+                                </p>
+                              </div>
+                            ) : (
+                              <></>
+                            )
+                          )
+                          .flat()
+                      ) : (
+                        <></>
+                      )
+                    )
+                  }
                   stackId="2"
                   fill="url(#predictionPattern)"
                   stroke="none"
