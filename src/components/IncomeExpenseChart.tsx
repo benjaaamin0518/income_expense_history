@@ -161,6 +161,7 @@ export default function IncomeExpenseChart() {
                 {/* 予測部分の斜線パターン */}
                 <Area
                   type="monotone"
+                  tooltipType="none"
                   dataKey={(data: monthlyReport[number]) =>
                     nowDate <= new Date(data.month)
                       ? (data.expense || data.expensePrediction) >=
@@ -169,6 +170,14 @@ export default function IncomeExpenseChart() {
                         : data.income || data.incomePrediction
                       : null
                   }
+                  stackId="2"
+                  fill="url(#predictionPattern)"
+                  stroke="none"
+                  fillOpacity={1}
+                />
+                <Area
+                  type="monotone"
+                  dataKey={(data: monthlyReport[number]) => data.reasoning}
                   stackId="2"
                   fill="url(#predictionPattern)"
                   stroke="none"

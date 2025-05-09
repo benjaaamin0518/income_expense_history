@@ -23,6 +23,7 @@ export type UserInvitation = {
   created_at: string;
   borrowed_user_id: number;
 };
+
 export type loginAuthApiRequest = Request<loginAuthRequest>;
 export type loginAuthResponse =
   | { status: number; result: { accessToken: string } }
@@ -68,6 +69,7 @@ export type monthlyReport = {
   expense: number;
   incomePrediction: number;
   expensePrediction: number;
+  reasoning: string;
 }[];
 
 export type incomeExpenseHistory = {
@@ -82,14 +84,18 @@ export type incomeExpenseHistory = {
 
 export type insertIncomeExpenseHistoryRequest = accessTokenAuthRequest &
   Omit<incomeExpenseHistory, "id"> & { mode: TransactionMode };
+
 export type predict = {
   month: string;
-  income: number;
+  repayment: number;
   debt: number;
+  reasoning: string;
 };
+
 export type predictions = {
   predictions: predict[];
 };
+
 export type insertIncomeExpenseHistoryApiRequest =
   Request<insertIncomeExpenseHistoryRequest>;
 export type insertIncomeExpenseHistoryResponse =
