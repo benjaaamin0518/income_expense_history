@@ -6,6 +6,7 @@ export type loginAuthRequest = {
 };
 
 export type IncomeExpenseType = "0" | "1"; // 0: repayment, 1: debt
+export type InsertBorrowedUserType = "new" | "exists"; // 0: repayment, 1: debt
 export type TransactionMode = "borrowing" | "lending";
 
 export type BorrowedUser = {
@@ -162,7 +163,7 @@ export type getBorrowedUsersApiRequest = Request<getBorrowedUsersRequest>;
 export type getBorrowedUsersApiResponse = Response<getBorrowedUsersResponse>;
 
 export type insertBorrowedUserRequest = accessTokenAuthRequest &
-  Omit<BorrowedUser, "id">;
+  Omit<BorrowedUser, "id"> & {mode : InsertBorrowedUserType};
 export type insertBorrowedUserApiRequest = Request<insertBorrowedUserRequest>;
 export type insertBorrowedUserResponse =
   | {
@@ -188,6 +189,7 @@ export type insertUserInfoRequest = {
   code: string;
   email: string;
   password: string;
+  name?: string;
 };
 export type insertUserInfoApiRequest = Request<insertUserInfoRequest>;
 export type insertUserInfoResponse =

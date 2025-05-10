@@ -31,7 +31,6 @@ export default function RegisterPage() {
     const loadInvitation = async () => {
       const code = searchParams.get("code");
       if (!code) {
-        setError("招待コードが見つかりません。");
         setIsLoading(false);
         return;
       }
@@ -69,10 +68,12 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       const form = new FormData(e.currentTarget);
       let email = form.get("email")!.valueOf().toString();
+      let name = form.get("name") ? form.get("name")!.valueOf().toString() : null;
       let password = form.get("password")!.valueOf().toString();
       let password2 = form.get("password2")!.valueOf().toString();
       const code = searchParams.get("code");
@@ -87,6 +88,7 @@ export default function RegisterPage() {
         code: code!,
         email: email!,
         password: password!,
+      ...(name ? {name} : {})
       });
       if (result !== 200) {
         setError("登録に失敗しました。");
@@ -135,7 +137,7 @@ export default function RegisterPage() {
                 ? "招待情報を確認中..."
                 : error
                 ? "エラーが発生しました"
-                : `${user?.name}さんの登録情報を入力してください`}
+                : `${user ? `${user?.name}さんの` : ``}登録情報を入力してください`}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
@@ -174,6 +176,24 @@ export default function RegisterPage() {
                     disabled={isLoading}
                   />
                 </motion.div>
+                {user?.name ? <></> :
+                  <motion.div
+                    className="space-y-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}>
+                  <Label htmlFor="email">ユーザー名</Label>
+                  <Input
+                      id="name"
+                      type="text"
+                      name="name"
+                      defaultValue={""}
+                      placeholder="テスト 太郎"
+                      required
+                      disabled={isLoading}
+                  />
+                </motion.div>
+                }
                 <motion.div
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}

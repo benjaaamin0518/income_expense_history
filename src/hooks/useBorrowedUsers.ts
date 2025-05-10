@@ -3,6 +3,7 @@ import {
   BorrowedUser,
   getInvitationsResponse,
   UserInvitation,
+    InsertBorrowedUserType
 } from "../type/NeonApiInterface";
 import { NeonClientApi } from "../common/NeonApiClient";
 import { getMonthlyReport, useDashBoard } from "./useDashBoard";
@@ -55,19 +56,21 @@ export const getInvitation = async (
 };
 export const createBorrowedUser = async (
   name: string,
+  mode : InsertBorrowedUserType,
   email?: string
 ): Promise<Omit<BorrowedUser, "id"> | null> => {
   const newUser: Omit<BorrowedUser, "id"> = {
     name,
     email: email || null,
     status: "pending",
-    created_at: new Date().toISOString(),
+    created_at: new Date().toISOString()
   };
   await client.insertBorrowedUser({
     userInfo: {
       accessToken:
         localStorage.getItem("income-expense-history-accessToken") || "",
     },
+    mode,
     ...newUser,
   });
   return newUser;

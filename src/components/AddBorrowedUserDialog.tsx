@@ -31,7 +31,7 @@ export function AddBorrowedUserDialog({
     setIsLoading(true);
 
     try {
-      await createBorrowedUser(name, email);
+      await createBorrowedUser(name, "new", email);
       const users = await getBorrowedUsers();
       setBorrowedUsers(users);
       onOpenChange(false);
@@ -48,7 +48,7 @@ export function AddBorrowedUserDialog({
     setIsLoading(true);
 
     try {
-      await createBorrowedUser("", existingEmail);
+      await createBorrowedUser("", "exists", existingEmail);
       const users = await getBorrowedUsers();
       setBorrowedUsers(users);
       onOpenChange(false);

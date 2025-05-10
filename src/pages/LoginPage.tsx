@@ -181,6 +181,7 @@ export default function LoginPage() {
               transition={{ delay: 0.6 }}>
               <Button
                 variant="link"
+                onClick={() => navigate("/register")}
                 className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 アカウントをお持ちでない方はこちら
               </Button>
