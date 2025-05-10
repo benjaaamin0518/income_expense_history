@@ -94,6 +94,7 @@ export type predict = {
 
 export type predictions = {
   predictions: predict[];
+  isCached: boolean;
 };
 
 export type insertIncomeExpenseHistoryApiRequest =
