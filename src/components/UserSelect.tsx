@@ -28,7 +28,8 @@ export function UserSelect({ mode }: UserSelectProps) {
     useBorrowedUsers();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const { setMonthlyReport, setIncomeExpenseHistory } = useDashBoard();
+  const { setMonthlyReport, setIncomeExpenseHistory, setIsLoading } =
+    useDashBoard();
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -53,6 +54,7 @@ export function UserSelect({ mode }: UserSelectProps) {
           value={selectedUserId || ""}
           onValueChange={async (e) => {
             if (e) {
+              setIsLoading(true);
               const report = await getMonthlyReport(e, mode);
               setMonthlyReport(report);
               const incomeExpenseHistory = await getIncomeExpenseHistory(
@@ -60,6 +62,7 @@ export function UserSelect({ mode }: UserSelectProps) {
                 mode
               );
               setIncomeExpenseHistory(incomeExpenseHistory);
+              setIsLoading(false);
             }
             setSelectedUserId(e);
           }}>

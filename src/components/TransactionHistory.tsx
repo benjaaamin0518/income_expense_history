@@ -97,7 +97,7 @@ function AddTransactionDialog({
     setIsSubmitting(true);
 
     try {
-      if (mode == "lending" && selectedUserId == "") {
+      if (selectedUserId == "") {
         alert("ユーザーを選択してください。");
         return;
       }
@@ -105,8 +105,6 @@ function AddTransactionDialog({
         alert("日付を入力してください。");
         return;
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       const selectedUser = borrowedUsers.find(
         (u) => u.id.toString() === selectedUserId
       );
@@ -331,6 +329,7 @@ export default function TransactionHistory() {
     setMonthlyReport,
     incomeExpenseHistory,
     monthlyReport,
+    setIsLoading,
   } = useDashBoard();
 
   const { selectedUserId } = useBorrowedUsers();
@@ -368,6 +367,7 @@ export default function TransactionHistory() {
     });
     if (transactions && statusCode === 200) {
       if (selectedUserId) {
+        setIsLoading(true);
         const incomeExpenseHistory = await getIncomeExpenseHistory(
           selectedUserId,
           mode
@@ -375,6 +375,7 @@ export default function TransactionHistory() {
         setIncomeExpenseHistory(incomeExpenseHistory);
         const monthlyReport = await getMonthlyReport(selectedUserId, mode);
         setMonthlyReport(monthlyReport);
+        setIsLoading(false);
         return;
       }
     }
@@ -399,6 +400,7 @@ export default function TransactionHistory() {
       });
       if (statusCode === 200) {
         if (selectedUserId) {
+          setIsLoading(true);
           const incomeExpenseHistory = await getIncomeExpenseHistory(
             selectedUserId,
             mode
@@ -407,6 +409,7 @@ export default function TransactionHistory() {
           const monthlyReport = await getMonthlyReport(selectedUserId, mode);
           setMonthlyReport(monthlyReport);
           setDeleteDialog({ isOpen: false, transaction: null });
+          setIsLoading(false);
         }
       }
     }

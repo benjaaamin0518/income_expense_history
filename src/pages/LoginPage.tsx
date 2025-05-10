@@ -35,7 +35,6 @@ export default function LoginPage() {
       ).value;
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
         const response = await login(email, password);
         if (response == 200) {
           navigate("/");

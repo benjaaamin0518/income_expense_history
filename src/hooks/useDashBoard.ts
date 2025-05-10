@@ -14,6 +14,8 @@ interface AuthState {
   setMonthlyReport: (obj: monthlyReport) => void;
   incomeExpenseHistory: incomeExpenseHistory[];
   setIncomeExpenseHistory: (obj: incomeExpenseHistory[]) => void;
+  isLoading: Boolean;
+  setIsLoading: (value: Boolean) => void;
 }
 const client = new NeonClientApi();
 export const getMonthlyReport = async (
@@ -83,4 +85,6 @@ export const useDashBoard = create<AuthState>((set) => ({
   setIncomeExpenseHistory: (obj) => {
     set({ incomeExpenseHistory: obj });
   },
+  isLoading: true,
+  setIsLoading: (value) => set({ isLoading: value }),
 }));

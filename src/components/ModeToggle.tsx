@@ -14,7 +14,7 @@ export function ModeToggle() {
   const { mode, setMode, setIncomeExpenseHistory } = useDashBoard();
   const { borrowedUsers, selectedUserId, setSelectedUserId, setBorrowedUsers } =
     useBorrowedUsers();
-  const { setMonthlyReport } = useDashBoard();
+  const { setMonthlyReport, setIsLoading } = useDashBoard();
   return (
     <div className="flex items-center gap-2 bg-muted/50 backdrop-blur-sm rounded-full p-1 border border-border/50">
       <Button
@@ -26,6 +26,7 @@ export function ModeToggle() {
             : "text-muted-foreground hover:text-primary/80"
         }`}
         onClick={async () => {
+          setIsLoading(true);
           const report = await getMonthlyReport(selectedUserId!, "borrowing");
           setMonthlyReport(report);
           const incomeExpenseHistory = await getIncomeExpenseHistory(
@@ -34,6 +35,7 @@ export function ModeToggle() {
           );
           setIncomeExpenseHistory(incomeExpenseHistory);
           setMode("borrowing");
+          setIsLoading(false);
         }}>
         {mode === "borrowing" && (
           <motion.div
@@ -55,6 +57,7 @@ export function ModeToggle() {
             : "text-muted-foreground hover:text-primary/80"
         }`}
         onClick={async () => {
+          setIsLoading(true);
           const report = await getMonthlyReport(selectedUserId!, "lending");
           setMonthlyReport(report);
           const incomeExpenseHistory = await getIncomeExpenseHistory(
@@ -63,6 +66,7 @@ export function ModeToggle() {
           );
           setIncomeExpenseHistory(incomeExpenseHistory);
           setMode("lending");
+          setIsLoading(false);
         }}>
         {mode === "lending" && (
           <motion.div

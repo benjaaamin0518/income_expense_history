@@ -37,7 +37,6 @@ const itemVariants = {
 };
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true);
   const {
     setMonthlyReport,
     monthlyReport,
@@ -45,6 +44,8 @@ export default function DashboardPage() {
     incomeExpenseHistory,
     mode,
     setMode,
+    isLoading,
+    setIsLoading,
   } = useDashBoard();
   const { borrowedUsers, selectedUserId, setSelectedUserId, setBorrowedUsers } =
     useBorrowedUsers();
@@ -59,7 +60,7 @@ export default function DashboardPage() {
       setIncomeExpenseHistory(incomeExpenseHistory);
       setIsLoading(false);
     })();
-  }, [isLoading]);
+  }, []);
 
   if (isLoading) {
     return (
