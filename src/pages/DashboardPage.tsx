@@ -50,9 +50,12 @@ export default function DashboardPage() {
   const { borrowedUsers, selectedUserId, setSelectedUserId, setBorrowedUsers } =
     useBorrowedUsers();
   useEffect(() => {
+    setIsLoading(true);
     // データ取得のシミュレーション
     (async () => {
       setSelectedUserId("all");
+      setMonthlyReport([]);
+      setIncomeExpenseHistory([]);
       setMode("borrowing");
       const monthlyReport = await getMonthlyReport();
       setMonthlyReport(monthlyReport);
