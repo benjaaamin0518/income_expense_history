@@ -55,6 +55,7 @@ class NeonClientApi {
   public async loginAuth(param: loginAuthRequest) {
     localStorage.removeItem("income-expense-history-accessToken");
     let statusCode = 200;
+    let borrowedUserId = null;
     try {
       const options: AxiosRequestConfig<loginAuthRequest> = {
         url: `${this._backendApiUrl}/api/v1/auth/login`,
@@ -68,6 +69,7 @@ class NeonClientApi {
           statusCode = res.data.status;
           if ("result" in res.data) {
             const accessToken = res.data.result.accessToken;
+            borrowedUserId = res.data.result.borrowedUserId;
             // データの保存
             localStorage.setItem(
               "income-expense-history-accessToken",
@@ -82,11 +84,12 @@ class NeonClientApi {
     } catch (e) {
       console.error(e);
     } finally {
-      return statusCode;
+      return {statusCode, borrowedUserId};
     }
   }
   public async accessTokenAuth(param: accessTokenAuthRequest) {
     let statusCode = 200;
+    let borrowedUserId = null;
     try {
       const options: AxiosRequestConfig<accessTokenAuthRequest> = {
         url: `${this._backendApiUrl}/api/v1/auth/accessToken`,
@@ -100,6 +103,7 @@ class NeonClientApi {
       >(options)
         .then((res) => {
           statusCode = res.data.status;
+          if ("result" in res.data) borrowedUserId = res.data.result.borrowedUserId;
         })
         .catch((error) => {
           statusCode = error.response.data.status;
@@ -108,7 +112,7 @@ class NeonClientApi {
     } catch (e) {
       console.error(e);
     } finally {
-      return statusCode;
+      return {statusCode, borrowedUserId};
     }
   }
   public async getMonthlyReport(param: getMonthlyReportRequest) {
@@ -380,6 +384,90 @@ class NeonClientApi {
           statusCode = error.response.data.status;
           console.log(error);
         });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async updateStatusPending(
+      param: deleteIncomeExpenseHistoryRequest
+  ) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/updateStatusPending`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+          any,
+          AxiosResponse<deleteIncomeExpenseHistoryResponse>,
+          deleteIncomeExpenseHistoryRequest
+      >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+          })
+          .catch((error) => {
+            statusCode = error.response.data.status;
+            console.log(error);
+          });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async updateStatusRejected(
+      param: deleteIncomeExpenseHistoryRequest
+  ) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/updateStatusRejected`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+          any,
+          AxiosResponse<deleteIncomeExpenseHistoryResponse>,
+          deleteIncomeExpenseHistoryRequest
+      >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+          })
+          .catch((error) => {
+            statusCode = error.response.data.status;
+            console.log(error);
+          });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return statusCode;
+    }
+  }
+  public async updateStatusDone(
+      param: deleteIncomeExpenseHistoryRequest
+  ) {
+    let statusCode = 200;
+    try {
+      const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
+        url: `${this._backendApiUrl}/api/v1/post/updateStatusDone`,
+        method: "POST",
+        data: param,
+      };
+      await axios<
+          any,
+          AxiosResponse<deleteIncomeExpenseHistoryResponse>,
+          deleteIncomeExpenseHistoryRequest
+      >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+          })
+          .catch((error) => {
+            statusCode = error.response.data.status;
+            console.log(error);
+          });
     } catch (e) {
       console.error(e);
     } finally {

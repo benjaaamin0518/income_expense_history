@@ -65,7 +65,7 @@ import {
   PopoverTrigger,
 } from "../components/ui/popover";
 import { cn } from "../lib/utils";
-import { incomeExpenseHistory } from "../type/NeonApiInterface";
+import {incomeExpenseHistory, ProcessedType} from "../type/NeonApiInterface";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import {
@@ -76,7 +76,10 @@ import {
 import { useBorrowedUsers } from "../hooks/useBorrowedUsers";
 import { NeonClientApi } from "../common/NeonApiClient";
 import { isMobile } from "react-device-detect";
-
+const statusLabels:{[key in Exclude<ProcessedType, "done">]: string} = {
+    "pending": "未承諾",
+    "rejected": "拒否",
+} as const;
 function AddTransactionDialog({
   onAdd,
 }: {
@@ -529,6 +532,7 @@ export default function TransactionHistory() {
                               : "secondary"
                           }
                           className={
+                          transaction.status === "done" ?
                             mode === "borrowing"
                               ? transaction.type === "0"
                                 ? "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30"
@@ -536,14 +540,16 @@ export default function TransactionHistory() {
                               : transaction.type === "0"
                               ? "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30"
                               : "bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                              :"bg-gray-500/20 text-gray-500 hover:bg-gray-500/30"
                           }>
-                          {mode === "borrowing"
+                          { mode === "borrowing"
                             ? transaction.type === "0"
                               ? "返済"
                               : "借入"
                             : transaction.type === "0"
                             ? "返済"
                             : "貸付"}
+                          {transaction.status === "done" ?"":Object.keys(statusLabels).includes(transaction.status || "") ?"("+statusLabels[transaction.status!]+")":""}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -568,6 +574,7 @@ export default function TransactionHistory() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {transaction.created_by === borro}
                             <DropdownMenuItem
                               className="text-red-500 focus:text-red-500"
                               onClick={() => handleDeleteClick(transaction)}>

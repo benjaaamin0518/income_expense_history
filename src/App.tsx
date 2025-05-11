@@ -14,8 +14,8 @@ function App() {
     const code = searchParams.get("code");
     if (code) return;
     (async () => {
-      const isAuthenticated = await accessTokenAuth();
-      isAuthenticated && auth();
+      const {isAuthenticated, borrowedUserId} = await accessTokenAuth();
+      isAuthenticated && auth(borrowedUserId);
     })();
   }, []);
   return (
