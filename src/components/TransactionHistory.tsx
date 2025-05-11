@@ -76,6 +76,7 @@ import {
 import { useBorrowedUsers } from "../hooks/useBorrowedUsers";
 import { NeonClientApi } from "../common/NeonApiClient";
 import { isMobile } from "react-device-detect";
+import { useAuth } from "../hooks/useAuth";
 const statusLabels:{[key in Exclude<ProcessedType, "done">]: string} = {
     "pending": "未承諾",
     "rejected": "拒否",
@@ -334,6 +335,7 @@ export default function TransactionHistory() {
     monthlyReport,
     setIsLoading,
   } = useDashBoard();
+  const {borrowedUserId} = useAuth();
 
   const { selectedUserId } = useBorrowedUsers();
 
@@ -574,13 +576,13 @@ export default function TransactionHistory() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {transaction.created_by === borro}
+                            {transaction.created_by === borrowedUserId ?
                             <DropdownMenuItem
                               className="text-red-500 focus:text-red-500"
                               onClick={() => handleDeleteClick(transaction)}>
                               <Trash2 className="mr-2 h-4 w-4" />
                               削除
-                            </DropdownMenuItem>
+                            </DropdownMenuItem>:<></>}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
