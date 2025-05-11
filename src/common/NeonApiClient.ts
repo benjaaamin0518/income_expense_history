@@ -30,11 +30,8 @@ import {
   UserInvitation,
 } from "../type/NeonApiInterface";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { error } from "console";
-import { useNavigate } from "react-router-dom";
 class NeonClientApi {
   private _backendApiUrl: string;
-
   constructor() {
     this._backendApiUrl = import.meta.env.VITE_BACKEND_API_URL || "";
   }
@@ -140,6 +137,8 @@ class NeonClientApi {
         });
     } catch (e) {
       console.error(e);
+      window.location.href = location.host;
+      window.location.reload();
     } finally {
       return monthlyReport;
     }
@@ -226,6 +225,8 @@ class NeonClientApi {
         });
     } catch (e) {
       console.error(e);
+      window.location.href = location.host;
+      window.location.reload();
     } finally {
       return incomeExpenseHistory;
     }
@@ -301,6 +302,8 @@ class NeonClientApi {
         });
     } catch (e) {
       console.error(e);
+      window.location.href = location.host;
+      window.location.reload();
     } finally {
       return borrowedUsers;
     }
