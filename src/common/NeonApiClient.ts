@@ -134,11 +134,11 @@ class NeonClientApi {
         .catch((error) => {
           statusCode = error.response.data.status;
           console.log(error);
+          window.location.href = location.host;
+          window.location.reload();
         });
     } catch (e) {
       console.error(e);
-      window.location.href = location.host;
-      window.location.reload();
     } finally {
       return monthlyReport;
     }
@@ -222,11 +222,11 @@ class NeonClientApi {
         .catch((error) => {
           statusCode = error.response.data.status;
           console.log(error);
+          window.location.href = location.host;
+          window.location.reload();
         });
     } catch (e) {
       console.error(e);
-      window.location.href = location.host;
-      window.location.reload();
     } finally {
       return incomeExpenseHistory;
     }
@@ -299,11 +299,11 @@ class NeonClientApi {
         .catch((error) => {
           statusCode = error.response.data.status;
           console.log(error);
+          window.location.href = location.host;
+          window.location.reload();
         });
     } catch (e) {
       console.error(e);
-      window.location.href = location.host;
-      window.location.reload();
     } finally {
       return borrowedUsers;
     }
