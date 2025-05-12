@@ -79,7 +79,7 @@ import { isMobile } from "react-device-detect";
 import { useAuth } from "../hooks/useAuth";
 const statusLabels:{[key in Exclude<ProcessedType, "done">]: string} = {
     "pending": "未承諾",
-    "rejected": "拒否",
+    "rejected": "却下",
 } as const;
 function AddTransactionDialog({
   onAdd,
@@ -313,13 +313,144 @@ function DeleteTransactionDialog({
     </AlertDialog>
   );
 }
-
+function ApprovalTransactionDialog({
+ isOpen,
+ onClose,
+ onConfirm,
+ transaction,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  transaction: incomeExpenseHistory;
+}) {
+  return (
+      <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>取引を承認</AlertDialogTitle>
+            <AlertDialogDescription>
+              以下の取引を承認してもよろしいですか？
+              <br />
+              {format(new Date(transaction.date), "yyyy年MM月dd日", {
+                locale: ja,
+              })}
+              の{transaction.description}（¥{transaction.price.toLocaleString()}）
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={onClose}>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={onConfirm}
+                className="bg-blue-500 hover:bg-blue-600">
+              承認
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+  );
+}
+function RejectedTransactionDialog({
+ isOpen,
+ onClose,
+ onConfirm,
+ transaction,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  transaction: incomeExpenseHistory;
+}) {
+  return (
+      <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>取引を却下</AlertDialogTitle>
+            <AlertDialogDescription>
+              以下の取引を却下してもよろしいですか？
+              <br />
+              {format(new Date(transaction.date), "yyyy年MM月dd日", {
+                locale: ja,
+              })}
+              の{transaction.description}（¥{transaction.price.toLocaleString()}）
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={onClose}>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={onConfirm}
+                className="bg-white hover:bg-white">
+              却下
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+  );
+}
+function RependingTransactionDialog({
+ isOpen,
+ onClose,
+ onConfirm,
+ transaction,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  transaction: incomeExpenseHistory;
+}) {
+  return (
+      <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>取引を再申請</AlertDialogTitle>
+            <AlertDialogDescription>
+              以下の取引を再申請してもよろしいですか？
+              <br />
+              {format(new Date(transaction.date), "yyyy年MM月dd日", {
+                locale: ja,
+              })}
+              の{transaction.description}（¥{transaction.price.toLocaleString()}）
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={onClose}>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={onConfirm}
+                className="bg-white hover:bg-white">
+              再申請
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+  );
+}
 export default function TransactionHistory() {
   const [transactions, setTransactions] = useState<incomeExpenseHistory[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>(
     new Date().getFullYear().toString()
   );
   const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    transaction: incomeExpenseHistory | null;
+  }>({
+    isOpen: false,
+    transaction: null,
+  });
+  const [approvalDialog, setApprovalDialog] = useState<{
+    isOpen: boolean;
+    transaction: incomeExpenseHistory | null;
+  }>({
+    isOpen: false,
+    transaction: null,
+  });
+  const [rejectedDialog, setRejectedDialog] = useState<{
+    isOpen: boolean;
+    transaction: incomeExpenseHistory | null;
+  }>({
+    isOpen: false,
+    transaction: null,
+  });
+  const [rependingDialog, setRependingDialog] = useState<{
     isOpen: boolean;
     transaction: incomeExpenseHistory | null;
   }>({
@@ -392,6 +523,24 @@ export default function TransactionHistory() {
       transaction,
     });
   };
+  const handleApprovalClick = (transaction: incomeExpenseHistory) => {
+    setApprovalDialog({
+      isOpen: true,
+      transaction,
+    });
+  };
+  const handleRejectedClick = (transaction: incomeExpenseHistory) => {
+    setRejectedDialog({
+      isOpen: true,
+      transaction,
+    });
+  };
+  const handleRependingClick = (transaction: incomeExpenseHistory) => {
+    setRependingDialog({
+      isOpen: true,
+      transaction,
+    });
+  };
 
   const handleDeleteConfirm = async () => {
     if (deleteDialog.transaction) {
@@ -419,6 +568,85 @@ export default function TransactionHistory() {
       }
     }
   };
+  const handleApprovalConfirm = async () => {
+    if (approvalDialog.transaction) {
+      const client = new NeonClientApi();
+      const statusCode = await client.updateStatusDone({
+        userInfo: {
+          accessToken:
+              localStorage.getItem("income-expense-history-accessToken") || "",
+        },
+        id: Number(approvalDialog.transaction!.id),
+      });
+      if (statusCode === 200) {
+        if (selectedUserId) {
+          setIsLoading(true);
+          const incomeExpenseHistory = await getIncomeExpenseHistory(
+              selectedUserId,
+              mode
+          );
+          setIncomeExpenseHistory(incomeExpenseHistory);
+          const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+          setMonthlyReport(monthlyReport);
+          setApprovalDialog({ isOpen: false, transaction: null });
+          setIsLoading(false);
+        }
+      }
+    }
+  };
+  const handleRejectedConfirm = async () => {
+    if (rejectedDialog.transaction) {
+      const client = new NeonClientApi();
+      const statusCode = await client.updateStatusRejected({
+        userInfo: {
+          accessToken:
+              localStorage.getItem("income-expense-history-accessToken") || "",
+        },
+        id: Number(rejectedDialog.transaction!.id),
+      });
+      if (statusCode === 200) {
+        if (selectedUserId) {
+          setIsLoading(true);
+          const incomeExpenseHistory = await getIncomeExpenseHistory(
+              selectedUserId,
+              mode
+          );
+          setIncomeExpenseHistory(incomeExpenseHistory);
+          const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+          setMonthlyReport(monthlyReport);
+          setRejectedDialog({ isOpen: false, transaction: null });
+          setIsLoading(false);
+        }
+      }
+    }
+  };
+  const handleRependingConfirm = async () => {
+    if (rependingDialog.transaction) {
+      const client = new NeonClientApi();
+      const statusCode = await client.updateStatusPending({
+        userInfo: {
+          accessToken:
+              localStorage.getItem("income-expense-history-accessToken") || "",
+        },
+        id: Number(rependingDialog.transaction!.id),
+      });
+      if (statusCode === 200) {
+        if (selectedUserId) {
+          setIsLoading(true);
+          const incomeExpenseHistory = await getIncomeExpenseHistory(
+              selectedUserId,
+              mode
+          );
+          setIncomeExpenseHistory(incomeExpenseHistory);
+          const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+          setMonthlyReport(monthlyReport);
+          setRependingDialog({ isOpen: false, transaction: null });
+          setIsLoading(false);
+        }
+      }
+    }
+  };
+
   const [years, setYears] = useState<string[]>([]);
   const [currentYearTransactions, setCurrentYearTransactions] = useState<
     incomeExpenseHistory[]
@@ -576,6 +804,27 @@ export default function TransactionHistory() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {transaction.created_by !== borrowedUserId  && transaction.status === "pending" ?
+                                <DropdownMenuItem
+                                    className="text-blue-500 focus:text-blue-500"
+                                    onClick={() => handleApprovalClick(transaction)}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  承諾
+                                </DropdownMenuItem>:<></>}
+                            {transaction.created_by !== borrowedUserId  && transaction.status === "pending" ?
+                                <DropdownMenuItem
+                                    className="text-white-500 focus:text-white-500"
+                                    onClick={() => handleRejectedClick(transaction)}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  却下
+                                </DropdownMenuItem>:<></>}
+                            {transaction.created_by === borrowedUserId  && transaction.status === "rejected" ?
+                                <DropdownMenuItem
+                                    className="text-white-500 focus:text-white-500"
+                                    onClick={() => handleRependingClick(transaction)}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  再申請
+                                </DropdownMenuItem>:<></>}
                             {transaction.created_by === borrowedUserId ?
                             <DropdownMenuItem
                               className="text-red-500 focus:text-red-500"
@@ -602,6 +851,30 @@ export default function TransactionHistory() {
           onConfirm={handleDeleteConfirm}
           transaction={deleteDialog.transaction}
         />
+      )}
+      {approvalDialog.transaction && (
+          <ApprovalTransactionDialog
+              isOpen={approvalDialog.isOpen}
+              onClose={() => setApprovalDialog({ isOpen: false, transaction: null })}
+              onConfirm={handleApprovalConfirm}
+              transaction={approvalDialog.transaction}
+          />
+      )}
+      {rejectedDialog.transaction && (
+          <RejectedTransactionDialog
+              isOpen={rejectedDialog.isOpen}
+              onClose={() => setRejectedDialog({ isOpen: false, transaction: null })}
+              onConfirm={handleRejectedConfirm}
+              transaction={rejectedDialog.transaction}
+          />
+      )}
+      {rependingDialog.transaction && (
+          <RependingTransactionDialog
+              isOpen={rependingDialog.isOpen}
+              onClose={() => setRependingDialog({ isOpen: false, transaction: null })}
+              onConfirm={handleRependingConfirm}
+              transaction={rependingDialog.transaction}
+          />
       )}
     </motion.div>
   );

@@ -72,7 +72,7 @@ export default function RegisterPage() {
 
     try {
       const form = new FormData(e.currentTarget);
-      let email = form.get("email")!.valueOf().toString();
+      let email = user?.email || form.get("email")!.valueOf().toString();
       let name = form.get("name") ? form.get("name")!.valueOf().toString() : null;
       let password = form.get("password")!.valueOf().toString();
       let password2 = form.get("password2")!.valueOf().toString();
@@ -173,7 +173,7 @@ export default function RegisterPage() {
                     defaultValue={user?.email || ""}
                     placeholder="example@example.com"
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || (user?.email || "") !== ""}
                   />
                 </motion.div>
                 {user?.name ? <></> :
