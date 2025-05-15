@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from "../components/ui/alert";
 import { getInvitationByCode } from "../hooks/useBorrowedUsers";
 import { BorrowedUser, UserInvitation } from "../type/NeonApiInterface";
 import { NeonClientApi } from "../common/NeonApiClient";
+import {useAuth} from "../hooks/useAuth";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function RegisterPage() {
   const [invitation, setInvitation] = useState<UserInvitation | null>(null);
   const [user, setUser] = useState<BorrowedUser | null>(null);
   const client = new NeonClientApi();
+  const { login } = useAuth();
 
   useEffect(() => {
     const loadInvitation = async () => {
@@ -95,6 +97,7 @@ export default function RegisterPage() {
         setIsLoading(false);
         return;
       }
+      await login(email, password);
       navigate("/login");
     } catch (err) {
       setError("登録に失敗しました。");
