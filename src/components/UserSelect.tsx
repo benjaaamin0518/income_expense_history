@@ -56,6 +56,15 @@ export function UserSelect({ mode }: UserSelectProps) {
             if (e) {
               setIsLoading(true);
               const report = await getMonthlyReport(e, mode);
+              const getReportInterval = setInterval(async () => {
+                const report = await getMonthlyReport(e, mode);
+                console.log("check-transactionHistory");
+                if (report.status == "done" || report.status == "error") {
+                  clearInterval(getReportInterval);
+                  setMonthlyReport(report.monthlyReport);
+                }
+              }, 10000);
+
               setMonthlyReport(report.monthlyReport);
               const incomeExpenseHistory = await getIncomeExpenseHistory(
                 e,
