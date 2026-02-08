@@ -28,10 +28,10 @@ export function ModeToggle() {
         onClick={async () => {
           setIsLoading(true);
           const report = await getMonthlyReport(selectedUserId!, "borrowing");
-          setMonthlyReport(report);
+          setMonthlyReport(report.monthlyReport);
           const incomeExpenseHistory = await getIncomeExpenseHistory(
             selectedUserId!,
-            "borrowing"
+            "borrowing",
           );
           setIncomeExpenseHistory(incomeExpenseHistory);
           setMode("borrowing");
@@ -59,10 +59,10 @@ export function ModeToggle() {
         onClick={async () => {
           setIsLoading(true);
           const report = await getMonthlyReport(selectedUserId!, "lending");
-          setMonthlyReport(report);
+          setMonthlyReport(report.monthlyReport);
           const incomeExpenseHistory = await getIncomeExpenseHistory(
             selectedUserId!,
-            "lending"
+            "lending",
           );
           setIncomeExpenseHistory(incomeExpenseHistory);
           setMode("lending");

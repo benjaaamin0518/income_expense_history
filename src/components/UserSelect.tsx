@@ -43,7 +43,7 @@ export function UserSelect({ mode }: UserSelectProps) {
   }, []);
 
   const selectedUser = borrowedUsers.find(
-    (u) => u.id.toString() === selectedUserId
+    (u) => u.id.toString() === selectedUserId,
   );
 
   return (
@@ -56,10 +56,10 @@ export function UserSelect({ mode }: UserSelectProps) {
             if (e) {
               setIsLoading(true);
               const report = await getMonthlyReport(e, mode);
-              setMonthlyReport(report);
+              setMonthlyReport(report.monthlyReport);
               const incomeExpenseHistory = await getIncomeExpenseHistory(
                 e,
-                mode
+                mode,
               );
               setIncomeExpenseHistory(incomeExpenseHistory);
               setIsLoading(false);

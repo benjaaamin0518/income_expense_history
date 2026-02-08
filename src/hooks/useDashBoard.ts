@@ -4,6 +4,7 @@ import {
   getMonthlyReportResponse,
   incomeExpenseHistory,
   monthlyReport,
+  monthlyReportEx,
   TransactionMode,
 } from "../type/NeonApiInterface";
 
@@ -18,10 +19,11 @@ interface AuthState {
   setIsLoading: (value: Boolean) => void;
 }
 const client = new NeonClientApi();
+
 export const getMonthlyReport = async (
   userId?: string,
-  mode: TransactionMode = "borrowing"
-): Promise<monthlyReport> => {
+  mode: TransactionMode = "borrowing",
+): Promise<monthlyReportEx> => {
   try {
     if (!userId || userId === "all") {
       const result = await client.getMonthlyReport({
@@ -43,12 +45,12 @@ export const getMonthlyReport = async (
     });
     return result;
   } catch (error) {
-    return [];
+    return { taskId: 0, status: "error", monthlyReport: [] };
   }
 };
 export const getIncomeExpenseHistory = async (
   userId?: string,
-  mode: TransactionMode = "borrowing"
+  mode: TransactionMode = "borrowing",
 ): Promise<incomeExpenseHistory[]> => {
   try {
     if (!userId || userId == "all") {

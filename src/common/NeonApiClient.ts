@@ -27,6 +27,10 @@ import {
   loginAuthRequest,
   loginAuthResponse,
   monthlyReport,
+  TaskProcessedType,
+  updateStatusDoneApiResponse,
+  updateStatusDoneRequest,
+  updateStatusDoneResponse,
   UserInvitation,
 } from "../type/NeonApiInterface";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
@@ -63,7 +67,7 @@ class NeonClientApi {
         data: param,
       };
       await axios<any, AxiosResponse<loginAuthResponse>, loginAuthRequest>(
-        options
+        options,
       )
         .then((res) => {
           statusCode = res.data.status;
@@ -73,7 +77,7 @@ class NeonClientApi {
             // データの保存
             localStorage.setItem(
               "income-expense-history-accessToken",
-              accessToken
+              accessToken,
             );
           }
         })
@@ -84,7 +88,7 @@ class NeonClientApi {
     } catch (e) {
       console.error(e);
     } finally {
-      return {statusCode, borrowedUserId};
+      return { statusCode, borrowedUserId };
     }
   }
   public async accessTokenAuth(param: accessTokenAuthRequest) {
@@ -103,7 +107,8 @@ class NeonClientApi {
       >(options)
         .then((res) => {
           statusCode = res.data.status;
-          if ("result" in res.data) borrowedUserId = res.data.result.borrowedUserId;
+          if ("result" in res.data)
+            borrowedUserId = res.data.result.borrowedUserId;
         })
         .catch((error) => {
           statusCode = error.response.data.status;
@@ -112,12 +117,14 @@ class NeonClientApi {
     } catch (e) {
       console.error(e);
     } finally {
-      return {statusCode, borrowedUserId};
+      return { statusCode, borrowedUserId };
     }
   }
   public async getMonthlyReport(param: getMonthlyReportRequest) {
     let statusCode = 200;
     let monthlyReport: monthlyReport = [];
+    let taskId = 0;
+    let status: TaskProcessedType = "error";
     try {
       const options: AxiosRequestConfig<getMonthlyReportRequest> = {
         url: `${this._backendApiUrl}/api/v1/get/monthlyReport`,
@@ -132,7 +139,9 @@ class NeonClientApi {
         .then((res) => {
           statusCode = res.data.status;
           if ("result" in res.data) {
-            monthlyReport = res.data.result;
+            monthlyReport = res.data.result.monthlyReport;
+            taskId = res.data.result.taskId;
+            status = res.data.result.status;
           }
         })
         .catch((error) => {
@@ -144,11 +153,11 @@ class NeonClientApi {
     } catch (e) {
       console.error(e);
     } finally {
-      return monthlyReport;
+      return { taskId, status, monthlyReport };
     }
   }
   public async insertIncomeExpenseHistory(
-    param: insertIncomeExpenseHistoryRequest
+    param: insertIncomeExpenseHistoryRequest,
   ) {
     let statusCode = 200;
     try {
@@ -176,7 +185,7 @@ class NeonClientApi {
     }
   }
   public async deleteIncomeExpenseHistory(
-    param: deleteIncomeExpenseHistoryRequest
+    param: deleteIncomeExpenseHistoryRequest,
   ) {
     let statusCode = 200;
     try {
@@ -390,9 +399,7 @@ class NeonClientApi {
       return statusCode;
     }
   }
-  public async updateStatusPending(
-      param: deleteIncomeExpenseHistoryRequest
-  ) {
+  public async updateStatusPending(param: deleteIncomeExpenseHistoryRequest) {
     let statusCode = 200;
     try {
       const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
@@ -401,73 +408,69 @@ class NeonClientApi {
         data: param,
       };
       await axios<
-          any,
-          AxiosResponse<deleteIncomeExpenseHistoryResponse>,
-          deleteIncomeExpenseHistoryRequest
+        any,
+        AxiosResponse<deleteIncomeExpenseHistoryResponse>,
+        deleteIncomeExpenseHistoryRequest
       >(options)
-          .then((res) => {
-            statusCode = res.data.status;
-          })
-          .catch((error) => {
-            statusCode = error.response.data.status;
-            console.log(error);
-          });
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
     } catch (e) {
       console.error(e);
     } finally {
       return statusCode;
     }
   }
-  public async updateStatusRejected(
-      param: deleteIncomeExpenseHistoryRequest
-  ) {
+  public async updateStatusRejected(param: updateStatusDoneRequest) {
     let statusCode = 200;
     try {
-      const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
+      const options: AxiosRequestConfig<updateStatusDoneRequest> = {
         url: `${this._backendApiUrl}/api/v1/post/updateStatusRejected`,
         method: "POST",
         data: param,
       };
       await axios<
-          any,
-          AxiosResponse<deleteIncomeExpenseHistoryResponse>,
-          deleteIncomeExpenseHistoryRequest
+        any,
+        AxiosResponse<updateStatusDoneResponse>,
+        updateStatusDoneRequest
       >(options)
-          .then((res) => {
-            statusCode = res.data.status;
-          })
-          .catch((error) => {
-            statusCode = error.response.data.status;
-            console.log(error);
-          });
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
     } catch (e) {
       console.error(e);
     } finally {
       return statusCode;
     }
   }
-  public async updateStatusDone(
-      param: deleteIncomeExpenseHistoryRequest
-  ) {
+  public async updateStatusDone(param: updateStatusDoneRequest) {
     let statusCode = 200;
     try {
-      const options: AxiosRequestConfig<deleteIncomeExpenseHistoryRequest> = {
+      const options: AxiosRequestConfig<updateStatusDoneRequest> = {
         url: `${this._backendApiUrl}/api/v1/post/updateStatusDone`,
         method: "POST",
         data: param,
       };
       await axios<
-          any,
-          AxiosResponse<deleteIncomeExpenseHistoryResponse>,
-          deleteIncomeExpenseHistoryRequest
+        any,
+        AxiosResponse<updateStatusDoneResponse>,
+        updateStatusDoneRequest
       >(options)
-          .then((res) => {
-            statusCode = res.data.status;
-          })
-          .catch((error) => {
-            statusCode = error.response.data.status;
-            console.log(error);
-          });
+        .then((res) => {
+          statusCode = res.data.status;
+        })
+        .catch((error) => {
+          statusCode = error.response.data.status;
+          console.log(error);
+        });
     } catch (e) {
       console.error(e);
     } finally {

@@ -49,6 +49,7 @@ export default function DashboardPage() {
   } = useDashBoard();
   const { borrowedUsers, selectedUserId, setSelectedUserId, setBorrowedUsers } =
     useBorrowedUsers();
+
   useEffect(() => {
     setIsLoading(true);
     // データ取得のシミュレーション
@@ -58,7 +59,16 @@ export default function DashboardPage() {
       setIncomeExpenseHistory([]);
       setMode("borrowing");
       const monthlyReport = await getMonthlyReport();
-      setMonthlyReport(monthlyReport);
+      const getReportInterval = setInterval(async () => {
+        const report = await getMonthlyReport();
+        console.log("check-dashboard");
+        console.log(report.status);
+        if (report.status == "done" || report.status == "error") {
+          clearInterval(getReportInterval);
+          setMonthlyReport(report.monthlyReport);
+        }
+      }, 10000);
+      setMonthlyReport(monthlyReport.monthlyReport);
       const incomeExpenseHistory = await getIncomeExpenseHistory();
       setIncomeExpenseHistory(incomeExpenseHistory);
       setIsLoading(false);
