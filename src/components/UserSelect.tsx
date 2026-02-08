@@ -56,12 +56,23 @@ export function UserSelect({ mode }: UserSelectProps) {
             if (e) {
               setIsLoading(true);
               const report = await getMonthlyReport(e, mode);
+              localStorage.setItem(
+                "income-expense-history-waitTaskId",
+                report.taskId.toString(),
+              );
               const getReportInterval = setInterval(async () => {
                 const report = await getMonthlyReport(e, mode);
                 console.log("check-transactionHistory");
-                if (report.status == "done" || report.status == "error") {
+                const isWaitTask =
+                  localStorage.getItem("income-expense-history-waitTaskId") ==
+                  report.taskId.toString();
+                if (
+                  report.status == "done" ||
+                  report.status == "error" ||
+                  !isWaitTask
+                ) {
                   clearInterval(getReportInterval);
-                  setMonthlyReport(report.monthlyReport);
+                  if (isWaitTask) setMonthlyReport(report.monthlyReport);
                 }
               }, 10000);
 

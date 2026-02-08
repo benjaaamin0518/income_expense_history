@@ -511,12 +511,23 @@ export default function TransactionHistory() {
         );
         setIncomeExpenseHistory(incomeExpenseHistory);
         const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+        localStorage.setItem(
+          "income-expense-history-waitTaskId",
+          monthlyReport.taskId.toString(),
+        );
         const getReportInterval = setInterval(async () => {
           const report = await getMonthlyReport(selectedUserId, mode);
           console.log("check-transactionHistory");
-          if (report.status == "done" || report.status == "error") {
+          const isWaitTask =
+            localStorage.getItem("income-expense-history-waitTaskId") ==
+            report.taskId.toString();
+          if (
+            report.status == "done" ||
+            report.status == "error" ||
+            !isWaitTask
+          ) {
             clearInterval(getReportInterval);
-            setMonthlyReport(report.monthlyReport);
+            if (isWaitTask) setMonthlyReport(report.monthlyReport);
           }
         }, 10000);
         setMonthlyReport(monthlyReport.monthlyReport);
@@ -572,12 +583,23 @@ export default function TransactionHistory() {
           );
           setIncomeExpenseHistory(incomeExpenseHistory);
           const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+          localStorage.setItem(
+            "income-expense-history-waitTaskId",
+            monthlyReport.taskId.toString(),
+          );
           const getReportInterval = setInterval(async () => {
             const report = await getMonthlyReport(selectedUserId, mode);
             console.log("check-transactionHistory");
-            if (report.status == "done" || report.status == "error") {
+            const isWaitTask =
+              localStorage.getItem("income-expense-history-waitTaskId") ==
+              report.taskId.toString();
+            if (
+              report.status == "done" ||
+              report.status == "error" ||
+              !isWaitTask
+            ) {
               clearInterval(getReportInterval);
-              setMonthlyReport(report.monthlyReport);
+              if (isWaitTask) setMonthlyReport(report.monthlyReport);
             }
           }, 10000);
           setMonthlyReport(monthlyReport.monthlyReport);
@@ -608,12 +630,23 @@ export default function TransactionHistory() {
           );
           setIncomeExpenseHistory(incomeExpenseHistory);
           const monthlyReport = await getMonthlyReport(selectedUserId, mode);
+          localStorage.setItem(
+            "income-expense-history-waitTaskId",
+            monthlyReport.taskId.toString(),
+          );
           const getReportInterval = setInterval(async () => {
             const report = await getMonthlyReport(selectedUserId, mode);
             console.log("check-transactionHistory");
-            if (report.status == "done" || report.status == "error") {
+            const isWaitTask =
+              localStorage.getItem("income-expense-history-waitTaskId") ==
+              report.taskId.toString();
+            if (
+              report.status == "done" ||
+              report.status == "error" ||
+              !isWaitTask
+            ) {
               clearInterval(getReportInterval);
-              setMonthlyReport(report.monthlyReport);
+              if (isWaitTask) setMonthlyReport(report.monthlyReport);
             }
           }, 10000);
           setMonthlyReport(monthlyReport.monthlyReport);

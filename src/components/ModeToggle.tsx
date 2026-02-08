@@ -28,12 +28,23 @@ export function ModeToggle() {
         onClick={async () => {
           setIsLoading(true);
           const report = await getMonthlyReport(selectedUserId!, "borrowing");
+          localStorage.setItem(
+            "income-expense-history-waitTaskId",
+            report.taskId.toString(),
+          );
           const getReportInterval = setInterval(async () => {
             const report = await getMonthlyReport(selectedUserId!, "borrowing");
             console.log("check-transactionHistory");
-            if (report.status == "done" || report.status == "error") {
+            const isWaitTask =
+              localStorage.getItem("income-expense-history-waitTaskId") ==
+              report.taskId.toString();
+            if (
+              report.status == "done" ||
+              report.status == "error" ||
+              !isWaitTask
+            ) {
               clearInterval(getReportInterval);
-              setMonthlyReport(report.monthlyReport);
+              if (isWaitTask) setMonthlyReport(report.monthlyReport);
             }
           }, 10000);
 
@@ -68,12 +79,23 @@ export function ModeToggle() {
         onClick={async () => {
           setIsLoading(true);
           const report = await getMonthlyReport(selectedUserId!, "lending");
+          localStorage.setItem(
+            "income-expense-history-waitTaskId",
+            report.taskId.toString(),
+          );
           const getReportInterval = setInterval(async () => {
             const report = await getMonthlyReport(selectedUserId!, "lending");
             console.log("check-transactionHistory");
-            if (report.status == "done" || report.status == "error") {
+            const isWaitTask =
+              localStorage.getItem("income-expense-history-waitTaskId") ==
+              report.taskId.toString();
+            if (
+              report.status == "done" ||
+              report.status == "error" ||
+              !isWaitTask
+            ) {
               clearInterval(getReportInterval);
-              setMonthlyReport(report.monthlyReport);
+              if (isWaitTask) setMonthlyReport(report.monthlyReport);
             }
           }, 10000);
           setMonthlyReport(report.monthlyReport);

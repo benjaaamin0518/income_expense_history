@@ -59,13 +59,24 @@ export default function DashboardPage() {
       setIncomeExpenseHistory([]);
       setMode("borrowing");
       const monthlyReport = await getMonthlyReport();
+      localStorage.setItem(
+        "income-expense-history-waitTaskId",
+        monthlyReport.taskId.toString(),
+      );
       const getReportInterval = setInterval(async () => {
         const report = await getMonthlyReport();
         console.log("check-dashboard");
         console.log(report.status);
-        if (report.status == "done" || report.status == "error") {
+        const isWaitTask =
+          localStorage.getItem("income-expense-history-waitTaskId") ==
+          report.taskId.toString();
+        if (
+          report.status == "done" ||
+          report.status == "error" ||
+          !isWaitTask
+        ) {
           clearInterval(getReportInterval);
-          setMonthlyReport(report.monthlyReport);
+          if (isWaitTask) setMonthlyReport(report.monthlyReport);
         }
       }, 10000);
       setMonthlyReport(monthlyReport.monthlyReport);
